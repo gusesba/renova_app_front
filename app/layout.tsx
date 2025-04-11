@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className={`${quicksand.variable}`}>
-            <body className={`antialiased bg-white`}>{children}</body>
+            <body className={`antialiased`}>{children}</body>
         </html>
     );
 }

@@ -12,7 +12,7 @@ export default function MainLayout({
             <Header />
             <Sidebar />
 
-            <main className="pl-56 pt-16 h-full bg-gray-50">{children}</main>
+            <main className="pl-56 pt-16 h-full">{children}</main>
         </div>
     );
 }
