@@ -82,12 +82,6 @@ export default function Table() {
             }),
     });
 
-    useEffect(() => {
-        console.log(table.getCanNextPage(), table.getCanPreviousPage());
-        console.log("Page Index:", table.getPageCount());
-        console.log("Page Options:", table.getPageOptions());
-    });
-
     const columns = useMemo<ColumnDef<Client, any>[]>(
         () => [
             {
@@ -137,8 +131,8 @@ export default function Table() {
             <table className="min-w-full text-sm text-left">
                 <thead>
                     {table.getHeaderGroups().map((headerGroup) => (
-                        <>
-                            <tr key={headerGroup.id} className="bg-gray">
+                        <React.Fragment key={headerGroup.id}>
+                            <tr className="bg-gray">
                                 {headerGroup.headers.map((header) => (
                                     <th
                                         key={header.id}
@@ -165,7 +159,7 @@ export default function Table() {
                                     </th>
                                 ))}
                             </tr>
-                            <tr key={`busca_${headerGroup.id}`}>
+                            <tr>
                                 {headerGroup.headers.map((header) => (
                                     <th key={`busca_${header.id}`} className="px-4 py-2">
                                         <input
@@ -183,7 +177,7 @@ export default function Table() {
                                     </th>
                                 ))}
                             </tr>
-                        </>
+                        </React.Fragment>
                     ))}
                 </thead>
                 <tbody>
