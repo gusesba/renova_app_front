@@ -1,12 +1,12 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import InputLabel from "../UI/InputLabel";
 import Button from "../UI/Button";
 import Link from "next/link";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 interface IFormValues {
-    name: string;
+    // name: string;
     email: number;
     password: string;
 }
@@ -18,8 +18,28 @@ export default function LoginFormCard() {
         formState: { errors },
     } = useForm<IFormValues>();
 
-    const onSubmit: SubmitHandler<IFormValues> = (data) => {
-        //#TODO: Implementar a lógica de login
+    const onSubmit: SubmitHandler<IFormValues> = async (data) => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error("Falha ao fazer login. Verifique suas credenciais.");
+            }
+
+            const result = await response.json();
+            const token = result.token;
+
+            localStorage.setItem("token", token);
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao fazer login. Verifique seu email e senha.");
+        }
     };
 
     return (
@@ -28,7 +48,7 @@ export default function LoginFormCard() {
             <p className="text-secondary mb-6">Digite seus dados para acessar</p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                <InputLabel
+                {/* <InputLabel
                     text="Nome"
                     id="name"
                     type="text"
@@ -36,7 +56,7 @@ export default function LoginFormCard() {
                     register={register}
                     rules={{ required: "Digite seu nome" }}
                     errorMesage={errors.name?.message}
-                />
+                /> */}
 
                 <InputLabel
                     text="Email"
@@ -56,7 +76,7 @@ export default function LoginFormCard() {
                     register={register}
                     rules={{
                         required: "Digite sua senha",
-                        minLength: { value: 8, message: "A senha deve ter no mínimo 8 caracteres" },
+                        minLength: { value: 3, message: "A senha deve ter no mínimo 8 caracteres" },
                     }}
                     errorMesage={errors.password?.message}
                 />

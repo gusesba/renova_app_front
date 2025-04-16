@@ -1,7 +1,9 @@
 "use client";
+import Table from "@/components/clients/Table";
 import Box from "@/components/UI/Box";
 import Button from "@/components/UI/Button";
-import React, { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 
 type Row = {
     id: number;
@@ -21,7 +23,7 @@ const data: Row[] = [
     { id: 2, nome: "Maria Souza", email: "maria@email.com", telefone: "(41)99874-2498" },
     { id: 3, nome: "Carlos Lima", email: "carlos@email.com", telefone: "(41)3364-7375" },
 ];
-
+const queryClient = new QueryClient();
 export default function TabelaEstilizada() {
     return (
         <Box>
@@ -31,41 +33,9 @@ export default function TabelaEstilizada() {
                     <Button>Pesquisa Avançada</Button>
                 </div>
             </div>
-
-            <table className="min-w-full text-sm text-left">
-                <thead>
-                    <tr className="bg-gray">
-                        {columns.map(({ column }) => (
-                            <th key={column} className="px-4 py-2 cursor-pointer select-none">
-                                <div className="flex items-center gap-1">
-                                    {column.charAt(0).toUpperCase() + column.slice(1)}
-                                    <span>↑</span>
-                                </div>
-                            </th>
-                        ))}
-                    </tr>
-                    <tr>
-                        {columns.map(({ column }) => (
-                            <th key={column} className="px-4 py-2">
-                                <input
-                                    type="text"
-                                    placeholder={`Buscar ${column}`}
-                                    className="w-full px-2 py-1 border border-gray rounded bg-white"
-                                />
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.map((row) => (
-                        <tr key={row.id} className="hover:bg-gray transition">
-                            <td className="px-4 py-2">{row.nome}</td>
-                            <td className="px-4 py-2">{row.email}</td>
-                            <td className="px-4 py-2">{row.telefone}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <QueryClientProvider client={queryClient}>
+                <Table />
+            </QueryClientProvider>
         </Box>
     );
 }
