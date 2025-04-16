@@ -4,6 +4,7 @@ import InputLabel from "../UI/InputLabel";
 import Button from "../UI/Button";
 import Link from "next/link";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 interface IFormValues {
     // name: string;
@@ -17,6 +18,8 @@ export default function LoginFormCard() {
         handleSubmit,
         formState: { errors },
     } = useForm<IFormValues>();
+
+    const router = useRouter();
 
     const onSubmit: SubmitHandler<IFormValues> = async (data) => {
         try {
@@ -36,6 +39,7 @@ export default function LoginFormCard() {
             const token = result.token;
 
             localStorage.setItem("token", token);
+            router.push("/main/clientes");
         } catch (error) {
             console.error(error);
             alert("Erro ao fazer login. Verifique seu email e senha.");
