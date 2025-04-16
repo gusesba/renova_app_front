@@ -127,84 +127,89 @@ export default function Table() {
     });
 
     return (
-        <div>
-            <table className="min-w-full text-sm text-left">
-                <thead>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                        <React.Fragment key={headerGroup.id}>
-                            <tr className="bg-gray">
-                                {headerGroup.headers.map((header) => (
-                                    <th
-                                        key={header.id}
-                                        className="px-4 py-2 cursor-pointer select-none"
-                                    >
-                                        {header.isPlaceholder ? null : (
-                                            <div
-                                                onClick={header.column.getToggleSortingHandler()}
-                                                className="flex items-center gap-1"
-                                            >
-                                                {flexRender(
+        <div className="overflow-x-auto">
+            <div className="max-h-96 overflow-y-auto">
+                <table className="min-w-full text-sm text-left border-collapse table-fixed">
+                    <thead className="bg-gray">
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <React.Fragment key={headerGroup.id}>
+                                <tr>
+                                    {headerGroup.headers.map((header) => (
+                                        <th
+                                            key={header.id}
+                                            className="px-4 py-2 bg-gray cursor-pointer select-none"
+                                        >
+                                            {header.isPlaceholder ? null : (
+                                                <div
+                                                    onClick={header.column.getToggleSortingHandler()}
+                                                    className="flex items-center gap-1"
+                                                >
+                                                    {flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext(),
+                                                    )}
+                                                    <span>
+                                                        {header.column.getIsSorted()
+                                                            ? header.column.getIsSorted() === "asc"
+                                                                ? "↑"
+                                                                : "↓"
+                                                            : null}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </th>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    {headerGroup.headers.map((header) => (
+                                        <th
+                                            key={`busca_${header.id}`}
+                                            className="px-4 py-2 bg-white"
+                                        >
+                                            <input
+                                                type="text"
+                                                placeholder={`Buscar ${flexRender(
                                                     header.column.columnDef.header,
                                                     header.getContext(),
-                                                )}
-                                                <span>
-                                                    {header.column.getIsSorted()
-                                                        ? header.column.getIsSorted() === "asc"
-                                                            ? "↑"
-                                                            : "↓"
-                                                        : null}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </th>
-                                ))}
-                            </tr>
-                            <tr>
-                                {headerGroup.headers.map((header) => (
-                                    <th key={`busca_${header.id}`} className="px-4 py-2">
-                                        <input
-                                            type="text"
-                                            placeholder={`Buscar ${flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext(),
-                                            )}`}
-                                            value={header.column.getFilterValue() as string}
-                                            onChange={(e) =>
-                                                header.column.setFilterValue(e.target.value)
-                                            }
-                                            className="w-full px-2 py-1 border border-gray rounded bg-white"
-                                        />
-                                    </th>
-                                ))}
-                            </tr>
-                        </React.Fragment>
-                    ))}
-                </thead>
-                <tbody>
-                    {isLoading
-                        ? [...Array(pageSize)].map((_, i) => (
-                              <tr key={`skeleton-${i}`} className="animate-pulse">
-                                  {columns.map((col, j) => (
-                                      <td key={`skeleton-cell-${i}-${j}`} className="px-4 py-2">
-                                          <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                                      </td>
-                                  ))}
-                              </tr>
-                          ))
-                        : table.getRowModel().rows.map((row) => (
-                              <tr key={row.id} className="hover:bg-gray transition">
-                                  {row.getVisibleCells().map((cell) => (
-                                      <td key={cell.id} className="px-4 py-2">
-                                          {flexRender(
-                                              cell.column.columnDef.cell,
-                                              cell.getContext(),
-                                          )}
-                                      </td>
-                                  ))}
-                              </tr>
-                          ))}
-                </tbody>
-            </table>
+                                                )}`}
+                                                value={header.column.getFilterValue() as string}
+                                                onChange={(e) =>
+                                                    header.column.setFilterValue(e.target.value)
+                                                }
+                                                className="w-full px-2 py-1 border border-gray rounded"
+                                            />
+                                        </th>
+                                    ))}
+                                </tr>
+                            </React.Fragment>
+                        ))}
+                    </thead>
+                    <tbody>
+                        {isLoading
+                            ? [...Array(pageSize)].map((_, i) => (
+                                  <tr key={`skeleton-${i}`} className="animate-pulse">
+                                      {columns.map((col, j) => (
+                                          <td key={`skeleton-cell-${i}-${j}`} className="px-4 py-2">
+                                              <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                                          </td>
+                                      ))}
+                                  </tr>
+                              ))
+                            : table.getRowModel().rows.map((row) => (
+                                  <tr key={row.id} className="hover:bg-gray transition">
+                                      {row.getVisibleCells().map((cell) => (
+                                          <td key={cell.id} className="px-4 py-2">
+                                              {flexRender(
+                                                  cell.column.columnDef.cell,
+                                                  cell.getContext(),
+                                              )}
+                                          </td>
+                                      ))}
+                                  </tr>
+                              ))}
+                    </tbody>
+                </table>
+            </div>
 
             <div className="flex justify-between items-center mt-4">
                 <div className="flex gap-2">
