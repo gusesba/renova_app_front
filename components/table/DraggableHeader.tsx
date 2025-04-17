@@ -9,6 +9,7 @@ export default function DraggableHeader({
     setColumnOrder,
     allColumns,
     columnOrder,
+    headersMap,
 }: {
     header: any;
     children: React.ReactNode;
@@ -16,6 +17,7 @@ export default function DraggableHeader({
     setColumnOrder: React.Dispatch<React.SetStateAction<string[]>>;
     allColumns: string[];
     columnOrder: string[];
+    headersMap: Record<string, string>;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
         id: header.id,
@@ -61,7 +63,7 @@ export default function DraggableHeader({
                                                 }}
                                                 className="w-full text-left px-4 py-2 hover:bg-gray-100"
                                             >
-                                                {col.charAt(0).toUpperCase() + col.slice(1)}
+                                                {headersMap[col]}
                                             </button>
                                         ))
                                     ) : (

@@ -16,23 +16,32 @@ import debounce from "lodash.debounce";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import DraggableHeader from "../table/DraggableHeader";
-import { fetchClients, Client, Response } from "../table/fetchData";
+import { fetchData, TableResponse } from "../table/fetchData";
 
-export default function Table() {
+export default function Table<T>({
+    columnKeys,
+    url,
+    headersMap,
+}: {
+    columnKeys: string[];
+    url: string;
+    headersMap: Record<string, string>;
+}) {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-    const [columnOrder, setColumnOrder] = useState<string[]>(["id", "name", "phone"]);
+    const [columnOrder, setColumnOrder] = useState<string[]>(columnKeys);
 
-    const { data, isLoading } = useQuery<Response<Client>>({
-        queryKey: ["clients", pageIndex, pageSize, sorting, columnFilters],
+    const { data, isLoading } = useQuery<TableResponse<T>>({
+        queryKey: [url, pageIndex, pageSize, sorting, columnFilters],
         queryFn: () =>
-            fetchClients({
+            fetchData({
                 page: pageIndex + 1,
                 pageSize,
                 sorting,
                 filters: columnFilters,
+                url,
             }),
     });
 
@@ -41,27 +50,12 @@ export default function Table() {
         [],
     );
 
-    const columns = useMemo<ColumnDef<Client, any>[]>(
-        () =>
-            columnOrder.map((colKey) => {
-                const defMap: Record<string, ColumnDef<Client, any>> = {
-                    id: {
-                        accessorKey: "id",
-                        header: "ID",
-                    },
-                    name: {
-                        accessorKey: "name",
-                        header: "Name",
-                    },
-                    phone: {
-                        accessorKey: "phone",
-                        header: "Phone",
-                    },
-                };
-                return defMap[colKey];
-            }),
-        [columnOrder],
-    );
+    const columns = useMemo<ColumnDef<T, any>[]>(() => {
+        return columnOrder.map((key) => ({
+            accessorKey: key,
+            header: headersMap[key],
+        }));
+    }, [columnOrder]);
 
     const table = useReactTable({
         data: data?.items || [],
@@ -129,8 +123,9 @@ export default function Table() {
                                                     header={header}
                                                     isFirst={idx === 0} // Passa true somente para o primeiro
                                                     setColumnOrder={setColumnOrder}
-                                                    allColumns={["id", "name", "phone"]}
+                                                    allColumns={columnKeys}
                                                     columnOrder={columnOrder}
+                                                    headersMap={headersMap}
                                                 >
                                                     {header.isPlaceholder ? null : (
                                                         <div

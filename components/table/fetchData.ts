@@ -5,25 +5,21 @@ export interface FetchParams {
     pageSize: number;
     sorting: SortingState;
     filters: ColumnFiltersState;
+    url: string;
 }
 
-export interface Response<T> {
+export interface TableResponse<T> {
     items: T[];
     totalPages: number;
 }
 
-export interface Client {
-    id: string;
-    name: string;
-    phone: string;
-}
-
-export const fetchClients = async ({
+export const fetchData = async <T>({
     page,
     pageSize,
     sorting,
     filters,
-}: FetchParams): Promise<Response<Client>> => {
+    url
+}: FetchParams): Promise<TableResponse<T>> => {
     const params = new URLSearchParams({
         page: String(page),
         pageSize: String(pageSize),
@@ -42,7 +38,7 @@ export const fetchClients = async ({
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients?${params.toString()}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${url}?${params.toString()}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
