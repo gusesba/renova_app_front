@@ -37,7 +37,7 @@ export default function DraggableHeader({
             {...attributes}
             {...listeners}
             style={style}
-            className="px-4 py-2 bg-gray cursor-pointer select-none relative"
+            className="px-4 py-2 bg-gray-50 cursor-pointer select-none relative"
         >
             <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">

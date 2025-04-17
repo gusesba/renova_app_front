@@ -9,7 +9,7 @@ const queryClient = new QueryClient();
 export default function TabelaEstilizada() {
     return (
         <Box>
-            <div className="flex justify-between items-center mb-4 shadow-md">
+            <div className="flex justify-between items-center mb-4 ">
                 <h2 className="text-xl font-bold">Tabela de Usuários</h2>
                 <div className="mb-2">
                     <Button>Configurações</Button>
