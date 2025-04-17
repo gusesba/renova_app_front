@@ -17,7 +17,6 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import {
     arrayMove,
     SortableContext,
-    sortableKeyboardCoordinates,
     useSortable,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -71,7 +70,7 @@ const fetchClients = async ({
         },
     });
 
-    if (!res.ok) throw new Error("Network response was not ok");
+    if (!res.ok) throw new Error("Erro ao buscar clientes");
     return res.json();
 };
 
@@ -150,10 +149,16 @@ export default function Table() {
         header,
         children,
         isFirst,
+        setColumnOrder,
+        allColumns,
+        columnOrder,
     }: {
         header: any;
         children: React.ReactNode;
         isFirst?: boolean;
+        setColumnOrder: React.Dispatch<React.SetStateAction<string[]>>;
+        allColumns: string[];
+        columnOrder: string[];
     }) {
         const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
             id: header.id,
@@ -165,23 +170,51 @@ export default function Table() {
             cursor: "move",
         };
 
+        const [showAddMenu, setShowAddMenu] = useState(false);
+
+        const missingColumns = allColumns.filter((col) => !columnOrder.includes(col));
+
         return (
             <th
                 ref={setNodeRef}
                 {...attributes}
                 {...listeners}
                 style={style}
-                className="px-4 py-2 bg-gray cursor-pointer select-none"
+                className="px-4 py-2 bg-gray cursor-pointer select-none relative"
             >
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                         {isFirst && (
-                            <button
-                                onClick={() => alert("Adicionar novo item")}
-                                className="ml-[-10px] text-xl font-bold text-primary hover:secondary cursor-pointer"
-                            >
-                                +
-                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowAddMenu((prev) => !prev)}
+                                    className="ml-[-10px] text-xl font-bold text-primary hover:secondary cursor-pointer"
+                                >
+                                    +
+                                </button>
+                                {showAddMenu && (
+                                    <div className="absolute left-0 mt-2 w-40 bg-white border rounded shadow z-10">
+                                        {missingColumns.length > 0 ? (
+                                            missingColumns.map((col) => (
+                                                <button
+                                                    key={col}
+                                                    onClick={() => {
+                                                        setColumnOrder((prev) => [col, ...prev]);
+                                                        setShowAddMenu(false);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                                                >
+                                                    {col.charAt(0).toUpperCase() + col.slice(1)}
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <div className="px-4 py-2 text-sm text-gray-500">
+                                                Nenhuma coluna
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         )}
                         {children}
                     </div>
@@ -189,9 +222,9 @@ export default function Table() {
                         onClick={() =>
                             setColumnOrder((prev) => prev.filter((id) => id !== header.id))
                         }
-                        className="text-error hover:text-error-light font-bold px-2 cursor-pointer"
+                        className="text-error hover:text-error-light cursor-pointer font-bold px-2"
                     >
-                        x
+                        X
                     </button>
                 </div>
             </th>
@@ -237,6 +270,9 @@ export default function Table() {
                                                     key={header.id}
                                                     header={header}
                                                     isFirst={idx === 0} // Passa true somente para o primeiro
+                                                    setColumnOrder={setColumnOrder}
+                                                    allColumns={["id", "name", "phone"]}
+                                                    columnOrder={columnOrder}
                                                 >
                                                     {header.isPlaceholder ? null : (
                                                         <div
