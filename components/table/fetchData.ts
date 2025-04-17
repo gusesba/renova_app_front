@@ -7,8 +7,8 @@ export interface FetchParams {
     filters: ColumnFiltersState;
 }
 
-export interface Response {
-    items: Client[];
+export interface Response<T> {
+    items: T[];
     totalPages: number;
 }
 
@@ -23,7 +23,7 @@ export const fetchClients = async ({
     pageSize,
     sorting,
     filters,
-}: FetchParams): Promise<Response> => {
+}: FetchParams): Promise<Response<Client>> => {
     const params = new URLSearchParams({
         page: String(page),
         pageSize: String(pageSize),

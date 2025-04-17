@@ -25,7 +25,7 @@ export default function Table() {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnOrder, setColumnOrder] = useState<string[]>(["id", "name", "phone"]);
 
-    const { data, isLoading } = useQuery<Response>({
+    const { data, isLoading } = useQuery<Response<Client>>({
         queryKey: ["clients", pageIndex, pageSize, sorting, columnFilters],
         queryFn: () =>
             fetchClients({
