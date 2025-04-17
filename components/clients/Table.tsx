@@ -146,7 +146,15 @@ export default function Table() {
         getFilteredRowModel: getFilteredRowModel(),
     });
 
-    function DraggableHeader({ header, children }: { header: any; children: React.ReactNode }) {
+    function DraggableHeader({
+        header,
+        children,
+        isFirst,
+    }: {
+        header: any;
+        children: React.ReactNode;
+        isFirst?: boolean;
+    }) {
         const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
             id: header.id,
         });
@@ -165,16 +173,44 @@ export default function Table() {
                 style={style}
                 className="px-4 py-2 bg-gray cursor-pointer select-none"
             >
-                {children}
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        {isFirst && (
+                            <button
+                                onClick={() => alert("Adicionar novo item")}
+                                className="ml-[-10px] text-xl font-bold text-primary hover:secondary cursor-pointer"
+                            >
+                                +
+                            </button>
+                        )}
+                        {children}
+                    </div>
+                    <button
+                        onClick={() =>
+                            setColumnOrder((prev) => prev.filter((id) => id !== header.id))
+                        }
+                        className="text-error hover:text-error-light font-bold px-2 cursor-pointer"
+                    >
+                        x
+                    </button>
+                </div>
             </th>
         );
     }
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5, // Ou você pode usar delay: 200
+            },
+        }),
+    );
 
     return (
         <div className="overflow-x-auto">
             <div className="max-h-96 overflow-y-auto">
                 <DndContext
-                    sensors={useSensors(useSensor(PointerSensor))}
+                    sensors={sensors}
                     collisionDetection={closestCenter}
                     onDragEnd={(event) => {
                         const { active, over } = event;
@@ -196,8 +232,12 @@ export default function Table() {
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <React.Fragment key={headerGroup.id}>
                                         <tr>
-                                            {headerGroup.headers.map((header) => (
-                                                <DraggableHeader key={header.id} header={header}>
+                                            {headerGroup.headers.map((header, idx) => (
+                                                <DraggableHeader
+                                                    key={header.id}
+                                                    header={header}
+                                                    isFirst={idx === 0} // Passa true somente para o primeiro
+                                                >
                                                     {header.isPlaceholder ? null : (
                                                         <div
                                                             onClick={header.column.getToggleSortingHandler()}

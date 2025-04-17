@@ -13,6 +13,7 @@
   --color-secondary: var(--color-indigo-400);
   --color-terciary: var(--color-indigo-300);
   --color-error: var(--color-red-500);
+  --color-error-light: var(--color-red-400);
   --color-gray: #eaeaea;
 }
 
