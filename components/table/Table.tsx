@@ -32,6 +32,7 @@ export default function Table<T>({
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnOrder, setColumnOrder] = useState<string[]>(columnKeys);
+    const [selectedRowIds, setSelectedRowIds] = useState<Record<string, boolean>>({});
 
     const { data, isLoading } = useQuery<TableResponse<T>>({
         queryKey: [url, pageIndex, pageSize, sorting, columnFilters],
@@ -65,6 +66,7 @@ export default function Table<T>({
             pagination: { pageIndex, pageSize },
             sorting,
             columnFilters,
+            rowSelection: selectedRowIds,
         },
         onPaginationChange: (updater) => {
             const newState =
@@ -72,6 +74,8 @@ export default function Table<T>({
             setPageIndex(newState.pageIndex);
             setPageSize(newState.pageSize);
         },
+        enableRowSelection: true,
+        onRowSelectionChange: setSelectedRowIds,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         manualPagination: true,
@@ -113,10 +117,39 @@ export default function Table<T>({
                         strategy={verticalListSortingStrategy}
                     >
                         <table className="min-w-full text-sm text-left border-collapse table-fixed">
-                            <thead className="bg-gray">
+                            <thead>
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <React.Fragment key={headerGroup.id}>
                                         <tr>
+                                            <th className="bg-gray-50">
+                                                <div className="flex items-center justify-center h-full">
+                                                    <label className="flex items-center cursor-pointer relative">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={table.getIsAllRowsSelected()}
+                                                            onChange={table.getToggleAllRowsSelectedHandler()}
+                                                            className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
+                                                            id="check1"
+                                                        />
+                                                        <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                className="h-3.5 w-3.5"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                    clipRule="evenodd"
+                                                                ></path>
+                                                            </svg>
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </th>
                                             {headerGroup.headers.map((header, idx) => (
                                                 <DraggableHeader
                                                     key={header.id}
@@ -150,6 +183,7 @@ export default function Table<T>({
                                             ))}
                                         </tr>
                                         <tr>
+                                            <th></th>
                                             {headerGroup.headers.map((header) => (
                                                 <th
                                                     key={`busca_${header.id}`}
@@ -189,6 +223,36 @@ export default function Table<T>({
                                       ))
                                     : table.getRowModel().rows.map((row) => (
                                           <tr key={row.id} className="hover:bg-gray transition">
+                                              <td>
+                                                  <div className="flex items-center justify-center h-full">
+                                                      <label className="flex items-center cursor-pointer relative">
+                                                          <input
+                                                              type="checkbox"
+                                                              checked={row.getIsSelected()}
+                                                              disabled={!row.getCanSelect()}
+                                                              onChange={row.getToggleSelectedHandler()}
+                                                              className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
+                                                              id="check1"
+                                                          />
+                                                          <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                                              <svg
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                  className="h-3.5 w-3.5"
+                                                                  viewBox="0 0 20 20"
+                                                                  fill="currentColor"
+                                                                  stroke="currentColor"
+                                                                  strokeWidth="1"
+                                                              >
+                                                                  <path
+                                                                      fillRule="evenodd"
+                                                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                      clipRule="evenodd"
+                                                                  ></path>
+                                                              </svg>
+                                                          </span>
+                                                      </label>
+                                                  </div>
+                                              </td>
                                               {row.getVisibleCells().map((cell) => (
                                                   <td key={cell.id} className="px-4 py-2">
                                                       {flexRender(
