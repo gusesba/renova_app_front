@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
 import Button from "../UI/Button";
+import debounce from "lodash.debounce";
 
 interface Client {
     id: string;
@@ -81,6 +82,11 @@ export default function Table() {
                 filters: columnFilters,
             }),
     });
+
+    const debounceOnChange = useCallback(
+        debounce((e, header) => header.column.setFilterValue(e.target.value), 500),
+        [],
+    );
 
     const columns = useMemo<ColumnDef<Client, any>[]>(
         () => [
@@ -172,10 +178,7 @@ export default function Table() {
                                                     header.column.columnDef.header,
                                                     header.getContext(),
                                                 )}`}
-                                                value={header.column.getFilterValue() as string}
-                                                onChange={(e) =>
-                                                    header.column.setFilterValue(e.target.value)
-                                                }
+                                                onChange={(e) => debounceOnChange(e, header)}
                                                 className="w-full px-2 py-1 border border-gray rounded"
                                             />
                                         </th>
