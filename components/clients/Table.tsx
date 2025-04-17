@@ -13,6 +13,15 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import Button from "../UI/Button";
 import debounce from "lodash.debounce";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Client {
     id: string;
@@ -71,6 +80,7 @@ export default function Table() {
     const [pageSize, setPageSize] = useState(10);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnOrder, setColumnOrder] = useState<string[]>(["id", "name", "phone"]);
 
     const { data, isLoading } = useQuery<Response>({
         queryKey: ["clients", pageIndex, pageSize, sorting, columnFilters],
@@ -89,21 +99,25 @@ export default function Table() {
     );
 
     const columns = useMemo<ColumnDef<Client, any>[]>(
-        () => [
-            {
-                accessorKey: "id",
-                header: "ID",
-            },
-            {
-                accessorKey: "name",
-                header: "Name",
-            },
-            {
-                accessorKey: "phone",
-                header: "Phone",
-            },
-        ],
-        [],
+        () =>
+            columnOrder.map((colKey) => {
+                const defMap: Record<string, ColumnDef<Client, any>> = {
+                    id: {
+                        accessorKey: "id",
+                        header: "ID",
+                    },
+                    name: {
+                        accessorKey: "name",
+                        header: "Name",
+                    },
+                    phone: {
+                        accessorKey: "phone",
+                        header: "Phone",
+                    },
+                };
+                return defMap[colKey];
+            }),
+        [columnOrder],
     );
 
     const table = useReactTable({
@@ -132,86 +146,134 @@ export default function Table() {
         getFilteredRowModel: getFilteredRowModel(),
     });
 
+    function DraggableHeader({ header, children }: { header: any; children: React.ReactNode }) {
+        const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+            id: header.id,
+        });
+
+        const style = {
+            transform: CSS.Transform.toString(transform),
+            transition,
+            cursor: "move",
+        };
+
+        return (
+            <th
+                ref={setNodeRef}
+                {...attributes}
+                {...listeners}
+                style={style}
+                className="px-4 py-2 bg-gray cursor-pointer select-none"
+            >
+                {children}
+            </th>
+        );
+    }
+
     return (
         <div className="overflow-x-auto">
             <div className="max-h-96 overflow-y-auto">
-                <table className="min-w-full text-sm text-left border-collapse table-fixed">
-                    <thead className="bg-gray">
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <React.Fragment key={headerGroup.id}>
-                                <tr>
-                                    {headerGroup.headers.map((header) => (
-                                        <th
-                                            key={header.id}
-                                            className="px-4 py-2 bg-gray cursor-pointer select-none"
-                                        >
-                                            {header.isPlaceholder ? null : (
-                                                <div
-                                                    onClick={header.column.getToggleSortingHandler()}
-                                                    className="flex items-center gap-1"
-                                                >
-                                                    {flexRender(
-                                                        header.column.columnDef.header,
-                                                        header.getContext(),
+                <DndContext
+                    sensors={useSensors(useSensor(PointerSensor))}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event) => {
+                        const { active, over } = event;
+                        if (active.id !== over?.id) {
+                            setColumnOrder((prev) => {
+                                const oldIndex = prev.indexOf(active.id as string);
+                                const newIndex = prev.indexOf(over?.id as string);
+                                return arrayMove(prev, oldIndex, newIndex);
+                            });
+                        }
+                    }}
+                >
+                    <SortableContext
+                        items={table.getHeaderGroups()[0].headers.map((h) => h.id)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <table className="min-w-full text-sm text-left border-collapse table-fixed">
+                            <thead className="bg-gray">
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <React.Fragment key={headerGroup.id}>
+                                        <tr>
+                                            {headerGroup.headers.map((header) => (
+                                                <DraggableHeader key={header.id} header={header}>
+                                                    {header.isPlaceholder ? null : (
+                                                        <div
+                                                            onClick={header.column.getToggleSortingHandler()}
+                                                            className="flex items-center gap-1"
+                                                        >
+                                                            {flexRender(
+                                                                header.column.columnDef.header,
+                                                                header.getContext(),
+                                                            )}
+                                                            <span>
+                                                                {header.column.getIsSorted()
+                                                                    ? header.column.getIsSorted() ===
+                                                                      "asc"
+                                                                        ? "↑"
+                                                                        : "↓"
+                                                                    : null}
+                                                            </span>
+                                                        </div>
                                                     )}
-                                                    <span>
-                                                        {header.column.getIsSorted()
-                                                            ? header.column.getIsSorted() === "asc"
-                                                                ? "↑"
-                                                                : "↓"
-                                                            : null}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </th>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    {headerGroup.headers.map((header) => (
-                                        <th
-                                            key={`busca_${header.id}`}
-                                            className="px-4 py-2 bg-white"
-                                        >
-                                            <input
-                                                type="text"
-                                                placeholder={`Buscar ${flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext(),
-                                                )}`}
-                                                onChange={(e) => debounceOnChange(e, header)}
-                                                className="w-full px-2 py-1 border border-gray rounded"
-                                            />
-                                        </th>
-                                    ))}
-                                </tr>
-                            </React.Fragment>
-                        ))}
-                    </thead>
-                    <tbody>
-                        {isLoading
-                            ? [...Array(pageSize)].map((_, i) => (
-                                  <tr key={`skeleton-${i}`} className="animate-pulse">
-                                      {columns.map((col, j) => (
-                                          <td key={`skeleton-cell-${i}-${j}`} className="px-4 py-2">
-                                              <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                                          </td>
+                                                </DraggableHeader>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            {headerGroup.headers.map((header) => (
+                                                <th
+                                                    key={`busca_${header.id}`}
+                                                    className="px-4 py-2 bg-white"
+                                                >
+                                                    <input
+                                                        type="text"
+                                                        placeholder={`Buscar ${flexRender(
+                                                            header.column.columnDef.header,
+                                                            header.getContext(),
+                                                        )}`}
+                                                        onChange={(e) =>
+                                                            debounceOnChange(e, header)
+                                                        }
+                                                        className="w-full px-2 py-1 border border-gray rounded"
+                                                    />
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </React.Fragment>
+                                ))}
+                            </thead>
+
+                            <tbody>
+                                {isLoading
+                                    ? [...Array(pageSize)].map((_, i) => (
+                                          <tr key={`skeleton-${i}`} className="animate-pulse">
+                                              {columns.map((col, j) => (
+                                                  <td
+                                                      key={`skeleton-cell-${i}-${j}`}
+                                                      className="px-4 py-2"
+                                                  >
+                                                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                                                  </td>
+                                              ))}
+                                          </tr>
+                                      ))
+                                    : table.getRowModel().rows.map((row) => (
+                                          <tr key={row.id} className="hover:bg-gray transition">
+                                              {row.getVisibleCells().map((cell) => (
+                                                  <td key={cell.id} className="px-4 py-2">
+                                                      {flexRender(
+                                                          cell.column.columnDef.cell,
+                                                          cell.getContext(),
+                                                      )}
+                                                  </td>
+                                              ))}
+                                          </tr>
                                       ))}
-                                  </tr>
-                              ))
-                            : table.getRowModel().rows.map((row) => (
-                                  <tr key={row.id} className="hover:bg-gray transition">
-                                      {row.getVisibleCells().map((cell) => (
-                                          <td key={cell.id} className="px-4 py-2">
-                                              {flexRender(
-                                                  cell.column.columnDef.cell,
-                                                  cell.getContext(),
-                                              )}
-                                          </td>
-                                      ))}
-                                  </tr>
-                              ))}
-                    </tbody>
-                </table>
+                            </tbody>
+                        </table>
+                    </SortableContext>
+                </DndContext>
             </div>
 
             <div className="flex justify-between items-center mt-4">
