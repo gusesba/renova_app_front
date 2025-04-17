@@ -47,7 +47,7 @@ export default function DraggableHeader({
                         <div className="relative">
                             <button
                                 onClick={() => setShowAddMenu((prev) => !prev)}
-                                className="ml-[-10px] text-xl font-bold text-primary hover:secondary cursor-pointer"
+                                className="ml-[-10px] text-xl font-bold text-primary hover:secondary cursor-pointer transition transform hover:scale-140"
                             >
                                 +
                             </button>
@@ -79,7 +79,7 @@ export default function DraggableHeader({
                 </div>
                 <button
                     onClick={() => setColumnOrder((prev) => prev.filter((id) => id !== header.id))}
-                    className="text-error hover:text-error-light cursor-pointer font-bold px-2"
+                    className="text-error hover:text-error-light cursor-pointer font-bold px-2 transition transform hover:scale-140"
                 >
                     X
                 </button>
