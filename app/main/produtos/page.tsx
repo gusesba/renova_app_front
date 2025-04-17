@@ -1,5 +1,5 @@
 "use client";
-import Table from "@/components/clients/Table";
+import Table from "@/components/table/Table";
 import Box from "@/components/UI/Box";
 import Button from "@/components/UI/Button";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

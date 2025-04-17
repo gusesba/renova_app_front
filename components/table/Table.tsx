@@ -15,8 +15,8 @@ import Button from "../UI/Button";
 import debounce from "lodash.debounce";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import DraggableHeader from "../table/DraggableHeader";
-import { fetchData, TableResponse } from "../table/fetchData";
+import DraggableHeader from "./DraggableHeader";
+import { fetchData, TableResponse } from "./fetchData";
 
 export default function Table<T>({
     columnKeys,
