@@ -20,7 +20,7 @@ export default function DraggableHeader({
     headersMap: Record<string, string>;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-        id: header.id,
+        id: header,
     });
 
     const style = {
@@ -78,7 +78,7 @@ export default function DraggableHeader({
                     {children}
                 </div>
                 <button
-                    onClick={() => setColumnOrder((prev) => prev.filter((id) => id !== header.id))}
+                    onClick={() => setColumnOrder((prev) => prev.filter((id) => id !== header))}
                     className="text-error hover:text-error-light cursor-pointer font-bold px-2 transition transform hover:scale-140"
                 >
                     X

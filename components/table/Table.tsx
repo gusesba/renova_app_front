@@ -153,7 +153,7 @@ export default function Table<T>({
                                             {headerGroup.headers.map((header, idx) => (
                                                 <DraggableHeader
                                                     key={header.id}
-                                                    header={header}
+                                                    header={header.id}
                                                     isFirst={idx === 0} // Passa true somente para o primeiro
                                                     setColumnOrder={setColumnOrder}
                                                     allColumns={columnKeys}
@@ -198,7 +198,7 @@ export default function Table<T>({
                                                         onChange={(e) =>
                                                             debounceOnChange(e, header)
                                                         }
-                                                        className="w-full px-2 py-1 border border-gray rounded"
+                                                        className="w-full px-2 py-1 border border-gray rounded focus:ring-primary focus:ring-2 outline-none"
                                                     />
                                                 </th>
                                             ))}

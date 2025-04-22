@@ -19,7 +19,7 @@ const headersMap: Record<string, string> = {
 };
 
 const queryClient = new QueryClient();
-export default function TabelaEstilizada() {
+export default function Clientes() {
     const [modalOpen, setModalOpen] = useState(false);
 
     return (
