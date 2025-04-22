@@ -36,7 +36,7 @@ export default function TabelaEstilizada() {
     return (
         <Box>
             <div className="flex justify-between items-center mb-4 ">
-                <h2 className="text-xl font-bold">Tabela de Produtos</h2>
+                <h2 className="text-xl font-bold">Em Estoque</h2>
                 <div className="mb-2">
                     <Button onClick={() => setModalOpen(true)}>Novo</Button>
                 </div>
