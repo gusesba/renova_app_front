@@ -20,6 +20,7 @@ export default function Venda() {
     const [productId, setProductId] = useState("");
     const [error, setError] = useState("");
     const [desconto, setDesconto] = useState(0);
+    const [clientId, setClientId] = useState("");
 
     const fetchProduto = async () => {
         if (!productId.trim()) return;
@@ -48,6 +49,38 @@ export default function Venda() {
             setError("");
         } catch (err: any) {
             setError(err.message || "Erro ao buscar produto");
+        }
+    };
+
+    const finalizarVenda = async () => {
+        if (!clientId.trim() || data.length === 0) {
+            setError("É necessário adicionar produtos e um cliente");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sells`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    clientId,
+                    productIds: data.map((item) => item.id),
+                    type: "sell",
+                }),
+            });
+
+            if (!res.ok) throw new Error("Erro ao finalizar venda");
+
+            alert("Venda finalizada com sucesso!");
+            setData([]);
+            setClientId("");
+            setDesconto(0);
+            setError("");
+        } catch (err: any) {
+            setError(err.message || "Erro ao finalizar venda");
         }
     };
 
@@ -98,6 +131,19 @@ export default function Venda() {
                         Adicionar Produto
                     </button>
                     {error && <span className="text-error text-sm ml-2">{error}</span>}
+                    <input
+                        type="text"
+                        placeholder="ID do cliente"
+                        value={clientId}
+                        onChange={(e) => setClientId(e.target.value)}
+                        className="border border-gray-300 px-2 py-1 rounded w-48"
+                    />
+                    <button
+                        onClick={finalizarVenda}
+                        className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 transition"
+                    >
+                        Finalizar Venda
+                    </button>
                 </div>
             </div>
             <DndContext
