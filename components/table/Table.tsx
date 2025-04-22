@@ -34,7 +34,7 @@ export default function Table<T>({
     const [columnOrder, setColumnOrder] = useState<string[]>(columnKeys);
     const [selectedRowIds, setSelectedRowIds] = useState<Record<string, boolean>>({});
 
-    const { data, isLoading } = useQuery<TableResponse<T>>({
+    const { data, isLoading, isFetching } = useQuery<TableResponse<T>>({
         queryKey: [url, pageIndex, pageSize, sorting, columnFilters],
         queryFn: () =>
             fetchData({
@@ -273,7 +273,7 @@ export default function Table<T>({
                 <div className="flex gap-2">
                     <Button
                         onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
+                        disabled={!table.getCanPreviousPage() || isFetching || isLoading}
                         size="md"
                     >
                         ←
@@ -281,7 +281,7 @@ export default function Table<T>({
                     <Button
                         size="md"
                         onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
+                        disabled={!table.getCanNextPage() || isFetching || isLoading}
                     >
                         →
                     </Button>

@@ -146,7 +146,7 @@ export default function Venda() {
                                 </tr>
                             ))}
                         </tbody>
-                        <tfoot>
+                        <tfoot className="border-t-gray-300 border-t">
                             <tr>
                                 <td
                                     colSpan={Math.ceil(columnKeys.length / 3)}
