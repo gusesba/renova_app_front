@@ -259,11 +259,19 @@ export default function Table<T>({
                                                   let formattedValue: React.ReactNode;
 
                                                   if (
+                                                      cell.column.id === "id" &&
+                                                      typeof value === "string"
+                                                  ) {
+                                                      // Mostra apenas os primeiros 8 caracteres do GUID
+                                                      formattedValue = value
+                                                          .substring(0, 8)
+                                                          .toUpperCase();
+                                                  } else if (
                                                       value instanceof Date ||
                                                       (typeof value === "string" &&
                                                           !isNaN(Date.parse(value)))
                                                   ) {
-                                                      const date = new Date(value as string); // assumindo que é string aqui
+                                                      const date = new Date(value as string);
                                                       formattedValue = date.toLocaleDateString(
                                                           "pt-BR",
                                                           {
