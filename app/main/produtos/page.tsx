@@ -1,9 +1,10 @@
 "use client";
+import { AddProductModal } from "@/components/products/AddProductModal";
 import Table from "@/components/table/Table";
 import Box from "@/components/UI/Box";
 import Button from "@/components/UI/Button";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React from "react";
+import React, { useState } from "react";
 
 export interface Product {
     id: string;
@@ -31,12 +32,13 @@ const headersMap: Record<string, string> = {
 
 const queryClient = new QueryClient();
 export default function TabelaEstilizada() {
+    const [modalOpen, setModalOpen] = useState(false);
     return (
         <Box>
             <div className="flex justify-between items-center mb-4 ">
                 <h2 className="text-xl font-bold">Tabela de Produtos</h2>
                 <div className="mb-2">
-                    <Button>Configurações</Button>
+                    <Button onClick={() => setModalOpen(true)}>Novo</Button>
                 </div>
             </div>
             <QueryClientProvider client={queryClient}>
@@ -56,6 +58,12 @@ export default function TabelaEstilizada() {
                     headersMap={headersMap}
                 />
             </QueryClientProvider>
+
+            <AddProductModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onAddProduct={() => {}}
+            />
         </Box>
     );
 }

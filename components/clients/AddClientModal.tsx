@@ -26,7 +26,7 @@ export function AddClientModal({ isOpen, onClose, onAddClient }: AddClientModalP
     const nodeRef = useRef(null);
 
     const onCloseHandler = () => {
-        reset(); // Limpa os campos do formulário ao fechar o modal
+        reset();
         onClose();
     };
 

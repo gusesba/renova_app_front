@@ -1,5 +1,5 @@
 "use client";
-import { AddClientModal } from "@/components/clients/Modal";
+import { AddClientModal } from "@/components/clients/AddClientModal";
 import Table from "@/components/table/Table";
 import Box from "@/components/UI/Box";
 import Button from "@/components/UI/Button";
@@ -28,7 +28,7 @@ export default function TabelaEstilizada() {
                 <div className="flex justify-between items-center mb-4 ">
                     <h2 className="text-xl font-bold">Tabela de Clientes</h2>
                     <div className="mb-2">
-                        <Button onClick={() => setModalOpen(true)}>Configurações</Button>
+                        <Button onClick={() => setModalOpen(true)}>Novo</Button>
                     </div>
                 </div>
                 <QueryClientProvider client={queryClient}>
