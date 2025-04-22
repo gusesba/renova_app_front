@@ -47,10 +47,10 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
     useEffect(() => {
         const fetchClients = async () => {
             try {
-                const token = localStorage.getItem("token");
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
+                    credentials: "include",
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
                     },
                 });
 
@@ -70,8 +70,6 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
 
     const onSubmit: SubmitHandler<ProductFormValues> = async (data) => {
         try {
-            const token = localStorage.getItem("token");
-
             const payload = {
                 ...data,
                 price: parseFloat(data.price as unknown as string),
@@ -82,8 +80,8 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
+                credentials: "include",
                 body: JSON.stringify(payload),
             });
 

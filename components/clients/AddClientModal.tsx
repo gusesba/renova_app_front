@@ -32,14 +32,13 @@ export function AddClientModal({ isOpen, onClose, onAddClient }: AddClientModalP
 
     const onSubmit: SubmitHandler<IFormValues> = async (data) => {
         try {
-            const token = localStorage.getItem("token");
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(data),
+                credentials: "include",
             });
 
             if (!response.ok) {

@@ -29,16 +29,12 @@ export default function LoginFormCard() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(data),
+                credentials: "include",
             });
 
             if (!response.ok) {
                 throw new Error("Falha ao fazer login. Verifique suas credenciais.");
             }
-
-            const result = await response.json();
-            const token = result.token;
-
-            localStorage.setItem("token", token);
             router.push("/main/clientes");
         } catch (error) {
             console.error(error);
