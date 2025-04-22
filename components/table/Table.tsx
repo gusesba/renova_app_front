@@ -253,14 +253,38 @@ export default function Table<T>({
                                                       </label>
                                                   </div>
                                               </td>
-                                              {row.getVisibleCells().map((cell) => (
-                                                  <td key={cell.id} className="px-4 py-2">
-                                                      {flexRender(
+                                              {row.getVisibleCells().map((cell) => {
+                                                  const value = cell.getValue();
+
+                                                  let formattedValue: React.ReactNode;
+
+                                                  if (
+                                                      value instanceof Date ||
+                                                      (typeof value === "string" &&
+                                                          !isNaN(Date.parse(value)))
+                                                  ) {
+                                                      const date = new Date(value as string); // assumindo que é string aqui
+                                                      formattedValue = date.toLocaleDateString(
+                                                          "pt-BR",
+                                                          {
+                                                              day: "2-digit",
+                                                              month: "2-digit",
+                                                              year: "numeric",
+                                                          },
+                                                      );
+                                                  } else {
+                                                      formattedValue = flexRender(
                                                           cell.column.columnDef.cell,
                                                           cell.getContext(),
-                                                      )}
-                                                  </td>
-                                              ))}
+                                                      );
+                                                  }
+
+                                                  return (
+                                                      <td key={cell.id} className="px-4 py-2">
+                                                          {formattedValue}
+                                                      </td>
+                                                  );
+                                              })}
                                           </tr>
                                       ))}
                             </tbody>

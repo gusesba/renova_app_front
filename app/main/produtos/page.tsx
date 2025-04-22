@@ -13,7 +13,7 @@ export interface Product {
     brand: string;
     size: string;
     color: string;
-    providerId: string;
+    providerName: string;
     description: string;
     entryDate?: Date;
 }
@@ -25,7 +25,7 @@ const headersMap: Record<string, string> = {
     brand: "Marca",
     size: "Tamanho",
     color: "Cor",
-    providerId: "Fornecedor",
+    providerName: "Fornecedor",
     description: "Descrição",
     entryDate: "Entrada",
 };
@@ -50,7 +50,7 @@ export default function Produtos() {
                         "brand",
                         "size",
                         "color",
-                        "providerId",
+                        "providerName",
                         "description",
                         "entryDate",
                     ]}
