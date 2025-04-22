@@ -46,61 +46,60 @@ export default function SearchableSelect<T extends Record<string, any>>({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const handleSelect = (opt: Option) => {
+        setSelected(opt);
+        setSearch(opt.label);
+        setIsOpen(false);
+        const fakeEvent = {
+            target: {
+                name: id,
+                value: opt.value,
+            },
+        };
+        register(id, rules).onChange(fakeEvent as any);
+    };
+
     return (
-        <div className="flex flex-col gap-1" ref={ref}>
-            <label htmlFor={id} className="font-medium">
+        <div className="flex flex-col gap-1 w-full" ref={ref}>
+            <label htmlFor={id} className="font-medium text-sm text-gray-700">
                 {label}
             </label>
 
-            <div className="relative">
+            <div className="relative w-full">
                 <input
                     type="text"
-                    readOnly
-                    value={selected?.label || ""}
-                    onClick={() => setIsOpen(!isOpen)}
-                    placeholder="Selecione..."
-                    className={
+                    id={id}
+                    value={search}
+                    onFocus={() => setIsOpen(true)}
+                    onChange={(e) => {
+                        setSearch(e.target.value);
+                        setIsOpen(true);
+                    }}
+                    placeholder="Digite para buscar..."
+                    className={`w-full px-4 py-2 border rounded-xl transition-all outline-none ${
                         errorMessage
-                            ? "w-full px-4 py-2 border border-gray-300 rounded-xl outline-none ring-1 focus:ring-2 ring-error"
-                            : "w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                    }
+                            ? "border-red-500 focus:ring-2 focus:ring-red-300"
+                            : "border-gray-300 focus:ring-2 focus:ring-primary"
+                    }`}
                 />
                 {isOpen && (
-                    <div className="absolute z-10 w-full bg-white border rounded-xl mt-1 shadow-lg max-h-60 overflow-y-auto">
-                        <input
-                            type="text"
-                            autoFocus
-                            placeholder="Pesquisar..."
-                            className="w-full px-4 py-2 border-b outline-none"
-                            onChange={(e) => setSearch(e.target.value)}
-                            value={search}
-                        />
-                        {filtered.length === 0 && (
+                    <div className="absolute z-20 w-full bg-gray-50 border border-gray-200 rounded-xl mt-1 shadow-2xl max-h-60 overflow-y-auto transition-all">
+                        {filtered.length === 0 ? (
                             <div className="px-4 py-2 text-sm text-gray-500">Nenhum resultado</div>
+                        ) : (
+                            filtered.map((opt) => (
+                                <div
+                                    key={opt.value}
+                                    className="px-4 py-2 text-sm hover:bg-primary hover:text-white cursor-pointer transition-colors"
+                                    onClick={() => handleSelect(opt)}
+                                >
+                                    {opt.label}
+                                </div>
+                            ))
                         )}
-                        {filtered.map((opt) => (
-                            <div
-                                key={opt.value}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                onClick={() => {
-                                    setSelected(opt);
-                                    setSearch("");
-                                    setIsOpen(false);
-                                    const fakeEvent = {
-                                        target: {
-                                            name: id,
-                                            value: opt.value,
-                                        },
-                                    };
-                                    register(id, rules).onChange(fakeEvent as any);
-                                }}
-                            >
-                                {opt.label}
-                            </div>
-                        ))}
                     </div>
                 )}
-                {/* Campo oculto para integrar com react-hook-form */}
+                {/* Campo oculto para integração com react-hook-form */}
                 <input type="hidden" {...register(id, rules)} value={selected?.value || ""} />
             </div>
 

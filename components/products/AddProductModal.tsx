@@ -3,7 +3,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { CSSTransition } from "react-transition-group";
 import Button from "../UI/Button";
 import InputLabel from "../UI/InputLabel";
-import SelectLabel from "../UI/SelectLabel";
 import SearchableSelect from "../UI/SearchableSelect";
 
 interface AddProductModalProps {
@@ -103,12 +102,21 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
                 ref={nodeRef}
             >
                 <div
-                    className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md"
+                    className="bg-white p-6 rounded-xl shadow-lg w-full max-w-xl"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <h2 className="text-xl font-semibold mb-4">Adicionar Produto</h2>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-2 gap-4">
+                        <SearchableSelect<ProductFormValues>
+                            id="providerId"
+                            label="Fornecedor"
+                            options={clients.map((c) => ({ label: c.name, value: c.id }))}
+                            register={register}
+                            rules={{ required: "Selecione um fornecedor" }}
+                            errorMessage={errors.providerId?.message}
+                        />
+
                         <InputLabel
                             text="Preço"
                             id="price"
@@ -154,16 +162,6 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
                             rules={{ required: "Digite a cor" }}
                             errorMesage={errors.color?.message}
                         />
-
-                        <SearchableSelect<ProductFormValues>
-                            id="providerId"
-                            label="Fornecedor"
-                            options={clients.map((c) => ({ label: c.name, value: c.id }))}
-                            register={register}
-                            rules={{ required: "Selecione um fornecedor" }}
-                            errorMessage={errors.providerId?.message}
-                        />
-
                         <InputLabel
                             text="Descrição"
                             id="description"
