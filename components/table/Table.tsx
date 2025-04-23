@@ -99,6 +99,39 @@ export default function Table<T>({
         return columnOrder.map((key) => ({
             accessorKey: key,
             header: headersMap[key],
+            cell: ({ row, column, getValue }) => {
+                const initialValue = getValue();
+                const [value, setValue] = React.useState(initialValue);
+                const [editing, setEditing] = React.useState(false);
+
+                const onBlur = async () => {
+                    setEditing(false);
+
+                    if (value !== initialValue) {
+                        // Envia a edição para o backend
+                        await fetch(
+                            `${process.env.NEXT_PUBLIC_API_URL}/clients/${row.original.id}`,
+                            {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ [column.id]: value }),
+                                credentials: "include",
+                            },
+                        );
+                    }
+                };
+
+                return editing ? (
+                    <input
+                        value={value}
+                        onChange={(e) => setValue(e.target.value)}
+                        onBlur={onBlur}
+                        autoFocus
+                    />
+                ) : (
+                    <span onClick={() => setEditing(true)}>{value}</span>
+                );
+            },
         }));
     }, [columnOrder]);
 
