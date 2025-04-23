@@ -26,13 +26,20 @@ export default function Venda() {
         if (!productId.trim()) return;
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`, {
-                headers: {
-                    "Content-Type": "application/json",
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/products/sell/${productId}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
                 },
-                credentials: "include",
-            });
-            if (!res.ok) throw new Error("Produto não encontrado");
+            );
+            if (!res.ok) {
+                const errorBody = await res.json().catch(() => null);
+                const errorMessage = errorBody?.message || "Erro ao buscar produto";
+                throw new Error(errorMessage);
+            }
 
             const produto: Produto = await res.json();
 

@@ -5,7 +5,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
         { name: "Clientes", path: "/main/clientes" },
         { name: "Estoque", path: "/main/produtos" },
         { name: "Vendas", path: "/vendas" },
-        { name: "Produtos Vendidos", path: "/produtos-vendidos" },
+        { name: "Fora de Estoque", path: "/main/fora" },
         { name: "Doações", path: "/doacoes" },
         { name: "Devoluções", path: "/devolucoes" },
     ];

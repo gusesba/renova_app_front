@@ -31,15 +31,11 @@ const headersMap: Record<string, string> = {
 };
 
 const queryClient = new QueryClient();
-export default function Produtos() {
-    const [modalOpen, setModalOpen] = useState(false);
+export default function Sold() {
     return (
         <Box>
             <div className="flex justify-between items-center mb-4 ">
-                <h2 className="text-xl font-bold">Em Estoque</h2>
-                <div className="mb-2">
-                    <Button onClick={() => setModalOpen(true)}>Novo</Button>
-                </div>
+                <h2 className="text-xl font-bold">Fora de Estoque</h2>
             </div>
             <QueryClientProvider client={queryClient}>
                 <Table<Product>
@@ -54,16 +50,10 @@ export default function Produtos() {
                         "description",
                         "entryDate",
                     ]}
-                    url="products/unsold"
+                    url="products/sold"
                     headersMap={headersMap}
                 />
             </QueryClientProvider>
-
-            <AddProductModal
-                isOpen={modalOpen}
-                onClose={() => setModalOpen(false)}
-                onAddProduct={() => {}}
-            />
         </Box>
     );
 }
