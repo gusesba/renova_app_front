@@ -18,17 +18,28 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import DraggableHeader from "./DraggableHeader";
 import { fetchData, TableResponse } from "./fetchData";
+import Box from "../UI/Box";
 
 export default function Table<T>({
     columnKeys,
     url,
     headersMap,
     canExpand = false,
+    canSelect = true,
+    canPaginate = true,
+    canFilter = true,
+    expandedComponent,
+    expandedTitle = "Detalhes",
 }: {
     columnKeys: string[];
     url: string;
     headersMap: Record<string, string>;
     canExpand?: boolean;
+    canSelect?: boolean;
+    canPaginate?: boolean;
+    canFilter?: boolean;
+    expandedComponent?: (id: string) => React.JSX.Element;
+    expandedTitle?: string;
 }) {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageSize, setPageSize] = useState(10);
@@ -79,7 +90,8 @@ export default function Table<T>({
             setPageIndex(newState.pageIndex);
             setPageSize(newState.pageSize);
         },
-        enableRowSelection: true,
+        enableRowSelection: canSelect,
+        enableFilters: canFilter,
         onRowSelectionChange: setSelectedRowIds,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
@@ -146,35 +158,37 @@ export default function Table<T>({
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <React.Fragment key={headerGroup.id}>
                                         <tr>
-                                            <th className="bg-gray-50">
-                                                <div className="flex items-center justify-center h-full">
-                                                    <label className="flex items-center cursor-pointer relative">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={table.getIsAllRowsSelected()}
-                                                            onChange={table.getToggleAllRowsSelectedHandler()}
-                                                            className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
-                                                            id="check1"
-                                                        />
-                                                        <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                className="h-3.5 w-3.5"
-                                                                viewBox="0 0 20 20"
-                                                                fill="currentColor"
-                                                                stroke="currentColor"
-                                                                strokeWidth="1"
-                                                            >
-                                                                <path
-                                                                    fillRule="evenodd"
-                                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                    clipRule="evenodd"
-                                                                ></path>
-                                                            </svg>
-                                                        </span>
-                                                    </label>
-                                                </div>
-                                            </th>
+                                            {canSelect && (
+                                                <th className="bg-gray-50">
+                                                    <div className="flex items-center justify-center h-full">
+                                                        <label className="flex items-center cursor-pointer relative">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={table.getIsAllRowsSelected()}
+                                                                onChange={table.getToggleAllRowsSelectedHandler()}
+                                                                className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
+                                                                id="check1"
+                                                            />
+                                                            <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    className="h-3.5 w-3.5"
+                                                                    viewBox="0 0 20 20"
+                                                                    fill="currentColor"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="1"
+                                                                >
+                                                                    <path
+                                                                        fillRule="evenodd"
+                                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                        clipRule="evenodd"
+                                                                    ></path>
+                                                                </svg>
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                </th>
+                                            )}
                                             {headerGroup.headers.map((header, idx) => (
                                                 <DraggableHeader
                                                     key={header.id}
@@ -207,27 +221,29 @@ export default function Table<T>({
                                                 </DraggableHeader>
                                             ))}
                                         </tr>
-                                        <tr>
-                                            <th></th>
-                                            {headerGroup.headers.map((header) => (
-                                                <th
-                                                    key={`busca_${header.id}`}
-                                                    className="px-4 py-2 bg-white"
-                                                >
-                                                    <input
-                                                        type="text"
-                                                        placeholder={`Buscar ${flexRender(
-                                                            header.column.columnDef.header,
-                                                            header.getContext(),
-                                                        )}`}
-                                                        onChange={(e) =>
-                                                            debounceOnChange(e, header)
-                                                        }
-                                                        className="w-full px-2 py-1 border border-gray rounded focus:ring-primary focus:ring-2 outline-none"
-                                                    />
-                                                </th>
-                                            ))}
-                                        </tr>
+                                        {canFilter && (
+                                            <tr>
+                                                <th></th>
+                                                {headerGroup.headers.map((header) => (
+                                                    <th
+                                                        key={`busca_${header.id}`}
+                                                        className="px-4 py-2 bg-white"
+                                                    >
+                                                        <input
+                                                            type="text"
+                                                            placeholder={`Buscar ${flexRender(
+                                                                header.column.columnDef.header,
+                                                                header.getContext(),
+                                                            )}`}
+                                                            onChange={(e) =>
+                                                                debounceOnChange(e, header)
+                                                            }
+                                                            className="w-full px-2 py-1 border border-gray rounded focus:ring-primary focus:ring-2 outline-none"
+                                                        />
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        )}
                                     </React.Fragment>
                                 ))}
                             </thead>
@@ -253,36 +269,38 @@ export default function Table<T>({
                                                   className="hover:bg-gray transition"
                                                   onClick={row.getToggleExpandedHandler()}
                                               >
-                                                  <td>
-                                                      <div className="flex items-center justify-center h-full">
-                                                          <label className="flex items-center cursor-pointer relative">
-                                                              <input
-                                                                  type="checkbox"
-                                                                  checked={row.getIsSelected()}
-                                                                  disabled={!row.getCanSelect()}
-                                                                  onChange={row.getToggleSelectedHandler()}
-                                                                  className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
-                                                                  id="check1"
-                                                              />
-                                                              <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                                                  <svg
-                                                                      xmlns="http://www.w3.org/2000/svg"
-                                                                      className="h-3.5 w-3.5"
-                                                                      viewBox="0 0 20 20"
-                                                                      fill="currentColor"
-                                                                      stroke="currentColor"
-                                                                      strokeWidth="1"
-                                                                  >
-                                                                      <path
-                                                                          fillRule="evenodd"
-                                                                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                          clipRule="evenodd"
-                                                                      ></path>
-                                                                  </svg>
-                                                              </span>
-                                                          </label>
-                                                      </div>
-                                                  </td>
+                                                  {canSelect && (
+                                                      <td>
+                                                          <div className="flex items-center justify-center h-full">
+                                                              <label className="flex items-center cursor-pointer relative">
+                                                                  <input
+                                                                      type="checkbox"
+                                                                      checked={row.getIsSelected()}
+                                                                      disabled={!row.getCanSelect()}
+                                                                      onChange={row.getToggleSelectedHandler()}
+                                                                      className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
+                                                                      id="check1"
+                                                                  />
+                                                                  <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                                                      <svg
+                                                                          xmlns="http://www.w3.org/2000/svg"
+                                                                          className="h-3.5 w-3.5"
+                                                                          viewBox="0 0 20 20"
+                                                                          fill="currentColor"
+                                                                          stroke="currentColor"
+                                                                          strokeWidth="1"
+                                                                      >
+                                                                          <path
+                                                                              fillRule="evenodd"
+                                                                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                              clipRule="evenodd"
+                                                                          ></path>
+                                                                      </svg>
+                                                                  </span>
+                                                              </label>
+                                                          </div>
+                                                      </td>
+                                                  )}
                                                   {row.getVisibleCells().map((cell) => {
                                                       const value = cell.getValue();
 
@@ -324,14 +342,28 @@ export default function Table<T>({
                                                       );
                                                   })}
                                               </tr>
-                                              {row.getIsExpanded() && (
-                                                  <tr>
-                                                      <td
-                                                          colSpan={columns.length + 1}
-                                                          className="px-4 py-2 bg-gray-50"
-                                                      ></td>
-                                                  </tr>
-                                              )}
+                                              {canExpand &&
+                                                  expandedComponent &&
+                                                  row.getIsExpanded() && (
+                                                      <tr>
+                                                          <td colSpan={columns.length + 1}>
+                                                              <Box>
+                                                                  <div className="flex justify-between items-center mb-4 ">
+                                                                      <h2 className="text-xl font-bold">
+                                                                          {expandedTitle}
+                                                                      </h2>
+                                                                  </div>
+                                                                  {expandedComponent(
+                                                                      (
+                                                                          row.original as {
+                                                                              id: string;
+                                                                          }
+                                                                      ).id,
+                                                                  )}
+                                                              </Box>
+                                                          </td>
+                                                      </tr>
+                                                  )}
                                           </React.Fragment>
                                       ))}
                             </tbody>
@@ -340,30 +372,32 @@ export default function Table<T>({
                 </DndContext>
             </div>
 
-            <div className="flex justify-between items-center mt-4">
-                <div className="flex gap-2">
-                    <Button
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage() || isFetching || isLoading}
-                        size="md"
-                    >
-                        ←
-                    </Button>
-                    <Button
-                        size="md"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage() || isFetching || isLoading}
-                    >
-                        →
-                    </Button>
+            {canPaginate && (
+                <div className="flex justify-between items-center mt-4">
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage() || isFetching || isLoading}
+                            size="md"
+                        >
+                            ←
+                        </Button>
+                        <Button
+                            size="md"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage() || isFetching || isLoading}
+                        >
+                            →
+                        </Button>
+                    </div>
+                    <span>
+                        Page{" "}
+                        <strong>
+                            {pageIndex + 1} of {data?.totalPages || 1}
+                        </strong>
+                    </span>
                 </div>
-                <span>
-                    Page{" "}
-                    <strong>
-                        {pageIndex + 1} of {data?.totalPages || 1}
-                    </strong>
-                </span>
-            </div>
+            )}
         </div>
     );
 }

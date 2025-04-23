@@ -1,9 +1,9 @@
 "use client";
-import Table from "@/components/sells/table/Table";
+import Table from "@/components/table/Table";
 import Box from "@/components/UI/Box";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import { Product } from "../produtos/page";
+import { headersMapProduct, Product } from "../produtos/page";
 
 export interface Sell {
     id: string;
@@ -14,7 +14,7 @@ export interface Sell {
     products: Product[];
 }
 
-const headersMap: Record<string, string> = {
+const headersMapSell: Record<string, string> = {
     id: "Id",
     type: "Tipo",
     clientName: "Cliente",
@@ -33,7 +33,29 @@ export default function Vendas() {
                 <Table
                     columnKeys={["id", "type", "clientName", "totalProducts", "date"]}
                     url="sells"
-                    headersMap={headersMap}
+                    headersMap={headersMapSell}
+                    canExpand={true}
+                    expandedComponent={(id: string) => (
+                        <Table<Product>
+                            columnKeys={[
+                                "id",
+                                "price",
+                                "type",
+                                "brand",
+                                "size",
+                                "color",
+                                "providerName",
+                                "description",
+                                "entryDate",
+                            ]}
+                            url={`sells/${id}/products`}
+                            headersMap={headersMapProduct}
+                            canPaginate={false}
+                            canSelect={false}
+                            canFilter={false}
+                        />
+                    )}
+                    expandedTitle="Produtos"
                 />
             </QueryClientProvider>
         </Box>

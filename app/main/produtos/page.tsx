@@ -18,7 +18,7 @@ export interface Product {
     entryDate?: Date;
 }
 
-const headersMap: Record<string, string> = {
+export const headersMapProduct: Record<string, string> = {
     id: "Id",
     price: "Preço",
     type: "Produto",
@@ -55,7 +55,7 @@ export default function Produtos() {
                         "entryDate",
                     ]}
                     url="products/unsold"
-                    headersMap={headersMap}
+                    headersMap={headersMapProduct}
                 />
             </QueryClientProvider>
 
