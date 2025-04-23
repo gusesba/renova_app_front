@@ -12,23 +12,22 @@ import {
     getExpandedRowModel,
 } from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
-import Button from "../UI/Button";
+import Button from "@/components/UI/Button";
 import debounce from "lodash.debounce";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import DraggableHeader from "./DraggableHeader";
-import { fetchData, TableResponse } from "./fetchData";
+import DraggableHeader from "@/components/table/DraggableHeader";
+import { fetchData, TableResponse } from "@/components/table/fetchData";
+import { Sell } from "@/app/main/vendas/page";
 
-export default function Table<T>({
+export default function Table({
     columnKeys,
     url,
     headersMap,
-    canExpand = false,
 }: {
     columnKeys: string[];
     url: string;
     headersMap: Record<string, string>;
-    canExpand?: boolean;
 }) {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageSize, setPageSize] = useState(10);
@@ -38,7 +37,7 @@ export default function Table<T>({
     const [selectedRowIds, setSelectedRowIds] = useState<Record<string, boolean>>({});
     const [expanded, setExpanded] = useState({});
 
-    const { data, isLoading, isFetching } = useQuery<TableResponse<T>>({
+    const { data, isLoading, isFetching } = useQuery<TableResponse<Sell>>({
         queryKey: [url, pageIndex, pageSize, sorting, columnFilters],
         queryFn: () =>
             fetchData({
@@ -55,7 +54,7 @@ export default function Table<T>({
         [],
     );
 
-    const columns = useMemo<ColumnDef<T, any>[]>(() => {
+    const columns = useMemo<ColumnDef<Sell, any>[]>(() => {
         return columnOrder.map((key) => ({
             accessorKey: key,
             header: headersMap[key],
@@ -109,7 +108,7 @@ export default function Table<T>({
         },
 
         getExpandedRowModel: getExpandedRowModel(),
-        getRowCanExpand: () => canExpand,
+        getRowCanExpand: () => true,
     });
 
     const sensors = useSensors(
@@ -249,40 +248,42 @@ export default function Table<T>({
                                     : table.getRowModel().rows.map((row) => (
                                           <React.Fragment key={row.id}>
                                               <tr
-                                                  key={row.id}
                                                   className="hover:bg-gray transition"
                                                   onClick={row.getToggleExpandedHandler()}
                                               >
                                                   <td>
                                                       <div className="flex items-center justify-center h-full">
-                                                          <label className="flex items-center cursor-pointer relative">
-                                                              <input
-                                                                  type="checkbox"
-                                                                  checked={row.getIsSelected()}
-                                                                  disabled={!row.getCanSelect()}
-                                                                  onChange={row.getToggleSelectedHandler()}
-                                                                  className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
-                                                                  id="check1"
-                                                              />
-                                                              <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                                                  <svg
-                                                                      xmlns="http://www.w3.org/2000/svg"
-                                                                      className="h-3.5 w-3.5"
-                                                                      viewBox="0 0 20 20"
-                                                                      fill="currentColor"
-                                                                      stroke="currentColor"
-                                                                      strokeWidth="1"
-                                                                  >
-                                                                      <path
-                                                                          fillRule="evenodd"
-                                                                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                          clipRule="evenodd"
-                                                                      ></path>
-                                                                  </svg>
-                                                              </span>
-                                                          </label>
+                                                          <div className="flex items-center gap-2">
+                                                              <label className="flex items-center cursor-pointer relative">
+                                                                  <input
+                                                                      type="checkbox"
+                                                                      checked={row.getIsSelected()}
+                                                                      disabled={!row.getCanSelect()}
+                                                                      onChange={row.getToggleSelectedHandler()}
+                                                                      className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
+                                                                      id="check1"
+                                                                  />
+                                                                  <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                                                      <svg
+                                                                          xmlns="http://www.w3.org/2000/svg"
+                                                                          className="h-3.5 w-3.5"
+                                                                          viewBox="0 0 20 20"
+                                                                          fill="currentColor"
+                                                                          stroke="currentColor"
+                                                                          strokeWidth="1"
+                                                                      >
+                                                                          <path
+                                                                              fillRule="evenodd"
+                                                                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                              clipRule="evenodd"
+                                                                          ></path>
+                                                                      </svg>
+                                                                  </span>
+                                                              </label>
+                                                          </div>
                                                       </div>
                                                   </td>
+
                                                   {row.getVisibleCells().map((cell) => {
                                                       const value = cell.getValue();
 
@@ -329,7 +330,10 @@ export default function Table<T>({
                                                       <td
                                                           colSpan={columns.length + 1}
                                                           className="px-4 py-2 bg-gray-50"
-                                                      ></td>
+                                                      >
+                                                          {/* Subcomponente com produtos */}
+                                                          <ExpandedRowContent sell={row.original} />
+                                                      </td>
                                                   </tr>
                                               )}
                                           </React.Fragment>
@@ -364,6 +368,21 @@ export default function Table<T>({
                     </strong>
                 </span>
             </div>
+        </div>
+    );
+}
+
+function ExpandedRowContent({ sell }: { sell: Sell }) {
+    return (
+        <div>
+            <h4 className="font-semibold mb-2">Produtos:</h4>
+            <ul className="list-disc pl-5">
+                {sell.products?.map((product, index) => (
+                    <li key={index}>
+                        {product.price} - {product.id}
+                    </li>
+                )) || <p className="text-gray-500">Nenhum produto.</p>}
+            </ul>
         </div>
     );
 }

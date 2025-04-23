@@ -4,8 +4,8 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
     const menuTabelas = [
         { name: "Clientes", path: "/main/clientes" },
         { name: "Estoque", path: "/main/produtos" },
-        { name: "Vendas", path: "/vendas" },
         { name: "Fora de Estoque", path: "/main/fora" },
+        { name: "Vendas", path: "/main/vendas" },
         { name: "Doações", path: "/doacoes" },
         { name: "Devoluções", path: "/devolucoes" },
     ];

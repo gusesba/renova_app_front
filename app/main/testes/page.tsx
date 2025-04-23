@@ -1,34 +1,99 @@
-import React, { useCallback, useMemo, useState } from "react";
+"use client";
+import { AddProductModal } from "@/components/products/AddProductModal";
+import DraggableHeader from "@/components/table/DraggableHeader";
+import { fetchData, TableResponse } from "@/components/table/fetchData";
+import Box from "@/components/UI/Box";
+import Button from "@/components/UI/Button";
+import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import {
-    useReactTable,
+    ColumnDef,
+    ColumnFiltersState,
+    flexRender,
     getCoreRowModel,
+    getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    getFilteredRowModel,
-    flexRender,
-    ColumnDef,
     SortingState,
-    ColumnFiltersState,
-    getExpandedRowModel,
+    useReactTable,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import Button from "../UI/Button";
 import debounce from "lodash.debounce";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import DraggableHeader from "./DraggableHeader";
-import { fetchData, TableResponse } from "./fetchData";
+import React, { useCallback, useMemo, useState } from "react";
 
-export default function Table<T>({
+export interface Product {
+    id: string;
+    price: number;
+    type: string;
+    brand: string;
+    size: string;
+    color: string;
+    providerName: string;
+    description: string;
+    entryDate?: Date;
+}
+
+const headersMap: Record<string, string> = {
+    id: "Id",
+    price: "Preço",
+    type: "Produto",
+    brand: "Marca",
+    size: "Tamanho",
+    color: "Cor",
+    providerName: "Fornecedor",
+    description: "Descrição",
+    entryDate: "Entrada",
+};
+
+const queryClient = new QueryClient();
+export default function Produtos() {
+    const [modalOpen, setModalOpen] = useState(false);
+    return (
+        <Box>
+            <div className="flex justify-between items-center mb-4 ">
+                <h2 className="text-xl font-bold">Em Estoque</h2>
+                <div className="mb-2">
+                    <Button onClick={() => setModalOpen(true)}>Novo</Button>
+                </div>
+            </div>
+            <QueryClientProvider client={queryClient}>
+                <Table<Product>
+                    columnKeys={[
+                        "id",
+                        "price",
+                        "type",
+                        "brand",
+                        "size",
+                        "color",
+                        "providerName",
+                        "description",
+                        "entryDate",
+                    ]}
+                    url="products/unsold"
+                    headersMap={headersMap}
+                    nivel={1}
+                />
+            </QueryClientProvider>
+
+            <AddProductModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onAddProduct={() => {}}
+            />
+        </Box>
+    );
+}
+
+function Table<T>({
     columnKeys,
     url,
     headersMap,
-    canExpand = false,
+    nivel,
 }: {
     columnKeys: string[];
     url: string;
     headersMap: Record<string, string>;
-    canExpand?: boolean;
+    nivel?: number;
 }) {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageSize, setPageSize] = useState(10);
@@ -36,7 +101,6 @@ export default function Table<T>({
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnOrder, setColumnOrder] = useState<string[]>(columnKeys);
     const [selectedRowIds, setSelectedRowIds] = useState<Record<string, boolean>>({});
-    const [expanded, setExpanded] = useState({});
 
     const { data, isLoading, isFetching } = useQuery<TableResponse<T>>({
         queryKey: [url, pageIndex, pageSize, sorting, columnFilters],
@@ -71,7 +135,6 @@ export default function Table<T>({
             sorting,
             columnFilters,
             rowSelection: selectedRowIds,
-            expanded,
         },
         onPaginationChange: (updater) => {
             const newState =
@@ -90,26 +153,6 @@ export default function Table<T>({
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        onExpandedChange: (updater) => {
-            setExpanded((prev) => {
-                const newExpanded = typeof updater === "function" ? updater(prev) : updater;
-
-                for (const key of Object.keys(newExpanded)) {
-                    for (const prevKey of Object.keys(prev)) {
-                        console.log("key", key, "prevKey", prevKey);
-                        if (key !== prevKey) {
-                            console.log({ [key]: true });
-                            return { [key]: true };
-                        }
-                    }
-                }
-
-                return newExpanded;
-            });
-        },
-
-        getExpandedRowModel: getExpandedRowModel(),
-        getRowCanExpand: () => canExpand,
     });
 
     const sensors = useSensors(
@@ -247,12 +290,8 @@ export default function Table<T>({
                                           </tr>
                                       ))
                                     : table.getRowModel().rows.map((row) => (
-                                          <React.Fragment key={row.id}>
-                                              <tr
-                                                  key={row.id}
-                                                  className="hover:bg-gray transition"
-                                                  onClick={row.getToggleExpandedHandler()}
-                                              >
+                                          <>
+                                              <tr key={row.id} className="hover:bg-gray transition">
                                                   <td>
                                                       <div className="flex items-center justify-center h-full">
                                                           <label className="flex items-center cursor-pointer relative">
@@ -324,46 +363,60 @@ export default function Table<T>({
                                                       );
                                                   })}
                                               </tr>
-                                              {row.getIsExpanded() && (
+                                              {nivel === 1 && (
                                                   <tr>
-                                                      <td
-                                                          colSpan={columns.length + 1}
-                                                          className="px-4 py-2 bg-gray-50"
-                                                      ></td>
+                                                      <td colSpan={columnKeys.length + 1}>
+                                                          <Table<Product>
+                                                              columnKeys={[
+                                                                  "id",
+                                                                  "price",
+                                                                  "type",
+                                                                  "brand",
+                                                                  "size",
+                                                                  "color",
+                                                                  "providerName",
+                                                                  "description",
+                                                                  "entryDate",
+                                                              ]}
+                                                              url="products/unsold"
+                                                              headersMap={headersMap}
+                                                          />
+                                                      </td>
                                                   </tr>
                                               )}
-                                          </React.Fragment>
+                                          </>
                                       ))}
                             </tbody>
                         </table>
                     </SortableContext>
                 </DndContext>
             </div>
-
-            <div className="flex justify-between items-center mt-4">
-                <div className="flex gap-2">
-                    <Button
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage() || isFetching || isLoading}
-                        size="md"
-                    >
-                        ←
-                    </Button>
-                    <Button
-                        size="md"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage() || isFetching || isLoading}
-                    >
-                        →
-                    </Button>
+            {nivel === 1 && (
+                <div className="flex justify-between items-center mt-4">
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage() || isFetching || isLoading}
+                            size="md"
+                        >
+                            ←
+                        </Button>
+                        <Button
+                            size="md"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage() || isFetching || isLoading}
+                        >
+                            →
+                        </Button>
+                    </div>
+                    <span>
+                        Page{" "}
+                        <strong>
+                            {pageIndex + 1} of {data?.totalPages || 1}
+                        </strong>
+                    </span>
                 </div>
-                <span>
-                    Page{" "}
-                    <strong>
-                        {pageIndex + 1} of {data?.totalPages || 1}
-                    </strong>
-                </span>
-            </div>
+            )}
         </div>
     );
 }
