@@ -48,18 +48,47 @@ export default function Table<T>({
     const [columnOrder, setColumnOrder] = useState<string[]>(columnKeys);
     const [selectedRowIds, setSelectedRowIds] = useState<Record<string, boolean>>({});
     const [expanded, setExpanded] = useState({});
+    const [dateFilters, setDateFilters] = useState<
+        Record<string, { start: string | null; end: string | null }>
+    >({});
 
     const { data, isLoading, isFetching } = useQuery<TableResponse<T>>({
-        queryKey: [url, pageIndex, pageSize, sorting, columnFilters],
+        queryKey: [url, pageIndex, pageSize, sorting, columnFilters, dateFilters],
         queryFn: () =>
             fetchData({
                 page: pageIndex + 1,
                 pageSize,
                 sorting,
-                filters: columnFilters,
+                filters: [
+                    ...columnFilters,
+                    ...Object.keys(dateFilters).flatMap((field) => {
+                        const { start, end } = dateFilters[field];
+                        const result: { id: string; value: string }[] = [];
+
+                        if (start) result.push({ id: `${field}Start`, value: start });
+                        if (end) result.push({ id: `${field}End`, value: end });
+
+                        return result;
+                    }),
+                ],
+
                 url,
             }),
     });
+
+    const handleDateFilterChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        field: string,
+        type: "start" | "end",
+    ) => {
+        setDateFilters((prev) => ({
+            ...prev,
+            [field]: {
+                ...prev[field],
+                [type]: e.target.value,
+            },
+        }));
+    };
 
     const debounceOnChange = useCallback(
         debounce((e, header) => header.column.setFilterValue(e.target.value), 500),
@@ -224,24 +253,68 @@ export default function Table<T>({
                                         {canFilter && (
                                             <tr>
                                                 <th></th>
-                                                {headerGroup.headers.map((header) => (
-                                                    <th
-                                                        key={`busca_${header.id}`}
-                                                        className="px-4 py-2 bg-white"
-                                                    >
-                                                        <input
-                                                            type="text"
-                                                            placeholder={`Buscar ${flexRender(
-                                                                header.column.columnDef.header,
-                                                                header.getContext(),
-                                                            )}`}
-                                                            onChange={(e) =>
-                                                                debounceOnChange(e, header)
-                                                            }
-                                                            className="w-full px-2 py-1 border border-gray rounded focus:ring-primary focus:ring-2 outline-none"
-                                                        />
-                                                    </th>
-                                                ))}
+                                                {headerGroup.headers.map((header) => {
+                                                    const isDateColumn = header.column.id
+                                                        .toLowerCase()
+                                                        .includes("date"); // Pode ser qualquer lógica para identificar colunas de data
+
+                                                    return (
+                                                        <th
+                                                            key={`busca_${header.id}`}
+                                                            className="px-4 py-2 bg-white"
+                                                        >
+                                                            {isDateColumn ? (
+                                                                <div className="flex gap-1">
+                                                                    <input
+                                                                        type="date"
+                                                                        value={
+                                                                            dateFilters[
+                                                                                header.column.id
+                                                                            ]?.start || ""
+                                                                        }
+                                                                        onChange={(e) =>
+                                                                            handleDateFilterChange(
+                                                                                e,
+                                                                                header.column.id,
+                                                                                "start",
+                                                                            )
+                                                                        }
+                                                                        className="px-2 py-1 border border-gray rounded max-w-[35px]"
+                                                                    />
+                                                                    <input
+                                                                        type="date"
+                                                                        value={
+                                                                            dateFilters[
+                                                                                header.column.id
+                                                                            ]?.end || ""
+                                                                        }
+                                                                        onChange={(e) =>
+                                                                            handleDateFilterChange(
+                                                                                e,
+                                                                                header.column.id,
+                                                                                "end",
+                                                                            )
+                                                                        }
+                                                                        className="px-2 py-1 border border-gray rounded max-w-[35px]"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder={`Buscar ${flexRender(
+                                                                        header.column.columnDef
+                                                                            .header,
+                                                                        header.getContext(),
+                                                                    )}`}
+                                                                    onChange={(e) =>
+                                                                        debounceOnChange(e, header)
+                                                                    }
+                                                                    className="w-full px-2 py-1 border border-gray rounded max-w-[160px]"
+                                                                />
+                                                            )}
+                                                        </th>
+                                                    );
+                                                })}
                                             </tr>
                                         )}
                                     </React.Fragment>
