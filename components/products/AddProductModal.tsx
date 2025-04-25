@@ -117,6 +117,21 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
                             errorMessage={errors.providerId?.message}
                         />
 
+                        <div>
+                            <SearchableSelect<ProductFormValues>
+                                id="color"
+                                label="Cor"
+                                options={[
+                                    { label: "Azul", value: "blue" },
+                                    { label: "Verde", value: "green" },
+                                    { label: "Vermelho", value: "red" },
+                                ]}
+                                register={register}
+                                rules={{ required: "Selecione uma cor" }}
+                                errorMessage={errors.color?.message}
+                            />
+                        </div>
+
                         <InputLabel
                             text="Preço"
                             id="price"

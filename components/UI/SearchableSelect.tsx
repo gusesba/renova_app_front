@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 import { RegisterOptions, UseFormRegister, Path } from "react-hook-form";
 
@@ -71,6 +72,7 @@ export default function SearchableSelect<T extends Record<string, any>>({
                     id={id}
                     value={search}
                     onFocus={() => setIsOpen(true)}
+                    autoComplete="off"
                     onChange={(e) => {
                         setSearch(e.target.value);
                         setIsOpen(true);

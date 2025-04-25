@@ -252,7 +252,7 @@ export default function Table<T>({
                                         </tr>
                                         {canFilter && (
                                             <tr>
-                                                <th></th>
+                                                {canSelect && <th></th>}
                                                 {headerGroup.headers.map((header) => {
                                                     const isDateColumn = header.column.id
                                                         .toLowerCase()
@@ -279,7 +279,7 @@ export default function Table<T>({
                                                                                 "start",
                                                                             )
                                                                         }
-                                                                        className="px-2 py-1 border border-gray rounded max-w-[35px]"
+                                                                        className="px-2 py-1 border border-gray rounded max-w-[35px] outline-none border-none"
                                                                     />
                                                                     <input
                                                                         type="date"
@@ -295,7 +295,7 @@ export default function Table<T>({
                                                                                 "end",
                                                                             )
                                                                         }
-                                                                        className="px-2 py-1 border border-gray rounded max-w-[35px]"
+                                                                        className="px-2 py-1 border border-gray rounded max-w-[35px] outline-none border-none"
                                                                     />
                                                                 </div>
                                                             ) : (
@@ -309,7 +309,7 @@ export default function Table<T>({
                                                                     onChange={(e) =>
                                                                         debounceOnChange(e, header)
                                                                     }
-                                                                    className="w-full px-2 py-1 border border-gray rounded max-w-[160px]"
+                                                                    className="w-full px-2 py-1 border border-gray rounded max-w-[160px] outline-none border-none"
                                                                 />
                                                             )}
                                                         </th>
