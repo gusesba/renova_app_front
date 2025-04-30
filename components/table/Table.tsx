@@ -28,8 +28,10 @@ export default function Table<T>({
     canSelect = true,
     canPaginate = true,
     canFilter = true,
+    canAddColumn = true,
     expandedComponent,
     expandedTitle = "Detalhes",
+    emptyComponent,
 }: {
     columnKeys: string[];
     url: string;
@@ -38,6 +40,8 @@ export default function Table<T>({
     canSelect?: boolean;
     canPaginate?: boolean;
     canFilter?: boolean;
+    canAddColumn?: boolean;
+    emptyComponent?: (value: string) => React.JSX.Element;
     expandedComponent?: (id: string) => React.JSX.Element;
     expandedTitle?: string;
 }) {
@@ -220,6 +224,7 @@ export default function Table<T>({
                                             )}
                                             {headerGroup.headers.map((header, idx) => (
                                                 <DraggableHeader
+                                                    canAddColumns={canAddColumn}
                                                     key={header.id}
                                                     header={header.id}
                                                     isFirst={idx === 0} // Passa true somente para o primeiro
@@ -229,23 +234,25 @@ export default function Table<T>({
                                                     headersMap={headersMap}
                                                 >
                                                     {header.isPlaceholder ? null : (
-                                                        <div
-                                                            onClick={header.column.getToggleSortingHandler()}
-                                                            className="flex items-center gap-1"
-                                                        >
-                                                            {flexRender(
-                                                                header.column.columnDef.header,
-                                                                header.getContext(),
-                                                            )}
-                                                            <span>
-                                                                {header.column.getIsSorted()
-                                                                    ? header.column.getIsSorted() ===
-                                                                      "asc"
-                                                                        ? "↑"
-                                                                        : "↓"
-                                                                    : null}
-                                                            </span>
-                                                        </div>
+                                                        <>
+                                                            <div
+                                                                onClick={header.column.getToggleSortingHandler()}
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                {flexRender(
+                                                                    header.column.columnDef.header,
+                                                                    header.getContext(),
+                                                                )}
+                                                                <span>
+                                                                    {header.column.getIsSorted()
+                                                                        ? header.column.getIsSorted() ===
+                                                                          "asc"
+                                                                            ? "↑"
+                                                                            : "↓"
+                                                                        : null}
+                                                                </span>
+                                                            </div>
+                                                        </>
                                                     )}
                                                 </DraggableHeader>
                                             ))}
@@ -335,110 +342,115 @@ export default function Table<T>({
                                               ))}
                                           </tr>
                                       ))
-                                    : table.getRowModel().rows.map((row) => (
-                                          <React.Fragment key={row.id}>
-                                              <tr
-                                                  key={row.id}
-                                                  className="hover:bg-gray transition"
-                                                  onClick={row.getToggleExpandedHandler()}
-                                              >
-                                                  {canSelect && (
-                                                      <td>
-                                                          <div className="flex items-center justify-center h-full">
-                                                              <label className="flex items-center cursor-pointer relative">
-                                                                  <input
-                                                                      type="checkbox"
-                                                                      checked={row.getIsSelected()}
-                                                                      disabled={!row.getCanSelect()}
-                                                                      onChange={row.getToggleSelectedHandler()}
-                                                                      className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
-                                                                      id="check1"
-                                                                  />
-                                                                  <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                                                      <svg
-                                                                          xmlns="http://www.w3.org/2000/svg"
-                                                                          className="h-3.5 w-3.5"
-                                                                          viewBox="0 0 20 20"
-                                                                          fill="currentColor"
-                                                                          stroke="currentColor"
-                                                                          strokeWidth="1"
-                                                                      >
-                                                                          <path
-                                                                              fillRule="evenodd"
-                                                                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                              clipRule="evenodd"
-                                                                          ></path>
-                                                                      </svg>
-                                                                  </span>
-                                                              </label>
-                                                          </div>
-                                                      </td>
-                                                  )}
-                                                  {row.getVisibleCells().map((cell) => {
-                                                      const value = cell.getValue();
+                                    : table.getRowModel().rows.length === 0
+                                      ? emptyComponent &&
+                                        emptyComponent(
+                                            table.getColumn("value")?.getFilterValue() as string,
+                                        )
+                                      : table.getRowModel().rows.map((row) => (
+                                            <React.Fragment key={row.id}>
+                                                <tr
+                                                    key={row.id}
+                                                    className="hover:bg-gray transition"
+                                                    onClick={row.getToggleExpandedHandler()}
+                                                >
+                                                    {canSelect && (
+                                                        <td>
+                                                            <div className="flex items-center justify-center h-full">
+                                                                <label className="flex items-center cursor-pointer relative">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={row.getIsSelected()}
+                                                                        disabled={
+                                                                            !row.getCanSelect()
+                                                                        }
+                                                                        onChange={row.getToggleSelectedHandler()}
+                                                                        className="peer h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-primary checked:border-primary"
+                                                                        id="check1"
+                                                                    />
+                                                                    <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            className="h-3.5 w-3.5"
+                                                                            viewBox="0 0 20 20"
+                                                                            fill="currentColor"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="1"
+                                                                        >
+                                                                            <path
+                                                                                fillRule="evenodd"
+                                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                                clipRule="evenodd"
+                                                                            ></path>
+                                                                        </svg>
+                                                                    </span>
+                                                                </label>
+                                                            </div>
+                                                        </td>
+                                                    )}
+                                                    {row.getVisibleCells().map((cell) => {
+                                                        const value = cell.getValue();
 
-                                                      let formattedValue: React.ReactNode;
+                                                        let formattedValue: React.ReactNode;
 
-                                                      if (
-                                                          cell.column.id === "id" &&
-                                                          typeof value === "string"
-                                                      ) {
-                                                          // Mostra apenas os primeiros 8 caracteres do GUID
-                                                          formattedValue = value
-                                                              .substring(0, 8)
-                                                              .toUpperCase();
-                                                      } else if (
-                                                          value instanceof Date ||
-                                                          (typeof value === "string" &&
-                                                              !isNaN(Date.parse(value)))
-                                                      ) {
-                                                          const date = new Date(value as string);
-                                                          formattedValue = date.toLocaleDateString(
-                                                              "pt-BR",
-                                                              {
-                                                                  day: "2-digit",
-                                                                  month: "2-digit",
-                                                                  year: "numeric",
-                                                              },
-                                                          );
-                                                      } else {
-                                                          formattedValue = flexRender(
-                                                              cell.column.columnDef.cell,
-                                                              cell.getContext(),
-                                                          );
-                                                      }
+                                                        if (
+                                                            cell.column.id === "id" &&
+                                                            typeof value === "string"
+                                                        ) {
+                                                            // Mostra apenas os primeiros 8 caracteres do GUID
+                                                            formattedValue = value
+                                                                .substring(0, 8)
+                                                                .toUpperCase();
+                                                        } else if (
+                                                            value instanceof Date ||
+                                                            (typeof value === "string" &&
+                                                                !isNaN(Date.parse(value)))
+                                                        ) {
+                                                            const date = new Date(value as string);
+                                                            formattedValue =
+                                                                date.toLocaleDateString("pt-BR", {
+                                                                    day: "2-digit",
+                                                                    month: "2-digit",
+                                                                    year: "numeric",
+                                                                });
+                                                        } else {
+                                                            formattedValue = flexRender(
+                                                                cell.column.columnDef.cell,
+                                                                cell.getContext(),
+                                                            );
+                                                        }
 
-                                                      return (
-                                                          <td key={cell.id} className="px-4 py-2">
-                                                              {formattedValue}
-                                                          </td>
-                                                      );
-                                                  })}
-                                              </tr>
-                                              {canExpand &&
-                                                  expandedComponent &&
-                                                  row.getIsExpanded() && (
-                                                      <tr>
-                                                          <td colSpan={columns.length + 1}>
-                                                              <Box>
-                                                                  <div className="flex justify-between items-center mb-4 ">
-                                                                      <h2 className="text-xl font-bold">
-                                                                          {expandedTitle}
-                                                                      </h2>
-                                                                  </div>
-                                                                  {expandedComponent(
-                                                                      (
-                                                                          row.original as {
-                                                                              id: string;
-                                                                          }
-                                                                      ).id,
-                                                                  )}
-                                                              </Box>
-                                                          </td>
-                                                      </tr>
-                                                  )}
-                                          </React.Fragment>
-                                      ))}
+                                                        return (
+                                                            <td key={cell.id} className="px-4 py-2">
+                                                                {formattedValue}
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                                {canExpand &&
+                                                    expandedComponent &&
+                                                    row.getIsExpanded() && (
+                                                        <tr>
+                                                            <td colSpan={columns.length + 1}>
+                                                                <Box>
+                                                                    <div className="flex justify-between items-center mb-4 ">
+                                                                        <h2 className="text-xl font-bold">
+                                                                            {expandedTitle}
+                                                                        </h2>
+                                                                    </div>
+                                                                    {expandedComponent(
+                                                                        (
+                                                                            row.original as {
+                                                                                id: string;
+                                                                            }
+                                                                        ).id,
+                                                                    )}
+                                                                </Box>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                            </React.Fragment>
+                                        ))}
                             </tbody>
                         </table>
                     </SortableContext>

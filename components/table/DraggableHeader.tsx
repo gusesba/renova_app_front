@@ -10,6 +10,7 @@ export default function DraggableHeader({
     allColumns,
     columnOrder,
     headersMap,
+    canAddColumns = true,
 }: {
     header: any;
     children: React.ReactNode;
@@ -18,6 +19,7 @@ export default function DraggableHeader({
     allColumns: string[];
     columnOrder: string[];
     headersMap: Record<string, string>;
+    canAddColumns?: boolean;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
         id: header,
@@ -36,14 +38,14 @@ export default function DraggableHeader({
     return (
         <th
             ref={setNodeRef}
-            {...attributes}
-            {...listeners}
-            style={style}
+            {...(canAddColumns ? attributes : {})}
+            {...(canAddColumns ? listeners : {})}
+            style={canAddColumns ? style : {}}
             className="px-4 py-2 bg-gray-50 cursor-pointer select-none relative"
         >
             <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                    {isFirst && (
+                    {isFirst && canAddColumns && (
                         <div className="relative">
                             <button
                                 onClick={() => setShowAddMenu((prev) => !prev)}
@@ -77,12 +79,14 @@ export default function DraggableHeader({
                     )}
                     {children}
                 </div>
-                <button
-                    onClick={() => setColumnOrder((prev) => prev.filter((id) => id !== header))}
-                    className="text-error hover:text-error-light cursor-pointer font-bold px-2 transition transform hover:scale-140"
-                >
-                    X
-                </button>
+                {canAddColumns && (
+                    <button
+                        onClick={() => setColumnOrder((prev) => prev.filter((id) => id !== header))}
+                        className="text-error hover:text-error-light cursor-pointer font-bold px-2 transition transform hover:scale-140"
+                    >
+                        X
+                    </button>
+                )}
             </div>
         </th>
     );
