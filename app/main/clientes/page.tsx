@@ -27,7 +27,7 @@ export default function Clientes() {
             <Box>
                 <div className="flex justify-between items-center mb-4 ">
                     <h2 className="text-xl font-bold">Tabela de Clientes</h2>
-                    <div className="mb-2">
+                    <div className="flex gap-1 mb-2">
                         <Button onClick={() => setModalOpen(true)}>Novo</Button>
                     </div>
                 </div>

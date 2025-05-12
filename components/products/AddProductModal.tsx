@@ -4,6 +4,7 @@ import { CSSTransition } from "react-transition-group";
 import Button from "../UI/Button";
 import InputLabel from "../UI/InputLabel";
 import SearchableSelect from "../UI/SearchableSelect";
+import { useProductConfig } from "./useProductConfig";
 
 interface AddProductModalProps {
     isOpen: boolean;
@@ -22,11 +23,6 @@ export interface ProductFormValues {
     entryDate?: string;
 }
 
-interface Client {
-    id: string;
-    name: string;
-}
-
 export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductModalProps) {
     const {
         register,
@@ -36,36 +32,13 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
     } = useForm<ProductFormValues>();
 
     const nodeRef = useRef(null);
-    const [clients, setClients] = useState<Client[]>([]);
 
     const onCloseHandler = () => {
         reset();
         onClose();
     };
 
-    useEffect(() => {
-        const fetchClients = async () => {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (!response.ok) throw new Error("Erro ao buscar fornecedores.");
-
-                const data = await response.json();
-                setClients(data.items);
-            } catch (error) {
-                console.error("Erro ao carregar fornecedores:", error);
-            }
-        };
-
-        if (isOpen) {
-            fetchClients();
-        }
-    }, [isOpen]);
+    const { clients, brands, types, sizes, colors } = useProductConfig();
 
     const onSubmit: SubmitHandler<ProductFormValues> = async (data) => {
         try {
@@ -121,14 +94,40 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
                             <SearchableSelect<ProductFormValues>
                                 id="color"
                                 label="Cor"
-                                options={[
-                                    { label: "Azul", value: "blue" },
-                                    { label: "Verde", value: "green" },
-                                    { label: "Vermelho", value: "red" },
-                                ]}
+                                options={colors.map((c) => ({ label: c.value, value: c.id }))}
                                 register={register}
                                 rules={{ required: "Selecione uma cor" }}
                                 errorMessage={errors.color?.message}
+                            />
+                        </div>
+                        <div>
+                            <SearchableSelect<ProductFormValues>
+                                id="brand"
+                                label="Marca"
+                                options={brands.map((b) => ({ label: b.value, value: b.id }))}
+                                register={register}
+                                rules={{ required: "Selecione uma marca" }}
+                                errorMessage={errors.brand?.message}
+                            />
+                        </div>
+                        <div>
+                            <SearchableSelect<ProductFormValues>
+                                id="type"
+                                label="Tipo"
+                                options={types.map((t) => ({ label: t.value, value: t.id }))}
+                                register={register}
+                                rules={{ required: "Selecione um tipo" }}
+                                errorMessage={errors.type?.message}
+                            />
+                        </div>
+                        <div>
+                            <SearchableSelect<ProductFormValues>
+                                id="size"
+                                label="Tamanho"
+                                options={sizes.map((s) => ({ label: s.value, value: s.id }))}
+                                register={register}
+                                rules={{ required: "Selecione um tamanho" }}
+                                errorMessage={errors.size?.message}
                             />
                         </div>
 
@@ -141,42 +140,7 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
                             rules={{ required: "Digite o preço" }}
                             errorMesage={errors.price?.message}
                         />
-                        <InputLabel
-                            text="Tipo"
-                            id="type"
-                            type="text"
-                            placeholder="Tipo"
-                            register={register}
-                            rules={{ required: "Digite o tipo" }}
-                            errorMesage={errors.type?.message}
-                        />
-                        <InputLabel
-                            text="Marca"
-                            id="brand"
-                            type="text"
-                            placeholder="Marca"
-                            register={register}
-                            rules={{ required: "Digite a marca" }}
-                            errorMesage={errors.brand?.message}
-                        />
-                        <InputLabel
-                            text="Tamanho"
-                            id="size"
-                            type="text"
-                            placeholder="Tamanho"
-                            register={register}
-                            rules={{ required: "Digite o tamanho" }}
-                            errorMesage={errors.size?.message}
-                        />
-                        <InputLabel
-                            text="Cor"
-                            id="color"
-                            type="text"
-                            placeholder="Cor"
-                            register={register}
-                            rules={{ required: "Digite a cor" }}
-                            errorMesage={errors.color?.message}
-                        />
+
                         <InputLabel
                             text="Descrição"
                             id="description"

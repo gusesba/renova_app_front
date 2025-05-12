@@ -14,11 +14,11 @@ export interface TableResponse<T> {
 }
 
 export const fetchData = async <T>({
-    page,
-    pageSize,
+    page = 1,
+    pageSize = 10,
     sorting,
     filters,
-    url
+    url,
 }: FetchParams): Promise<TableResponse<T>> => {
     const params = new URLSearchParams({
         page: String(page),
@@ -38,8 +38,8 @@ export const fetchData = async <T>({
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${url}?${params.toString()}`, {
         headers: {
-                    "Content-Type": "application/json",
-                },
+            "Content-Type": "application/json",
+        },
         credentials: "include",
     });
 

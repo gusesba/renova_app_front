@@ -26,9 +26,9 @@ const headersMapType: Record<string, string> = {
 
 const queryClient = new QueryClient();
 export default function Config() {
-    const onClick = async (value: string) => {
+    const onClick = async (value: string, type: string) => {
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/config/color`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/config/${type}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -41,13 +41,28 @@ export default function Config() {
                 throw new Error("Falha ao criar cor.");
             }
             queryClient.invalidateQueries({
-                predicate: (query) => query.queryKey[0] === "config/color",
+                predicate: (query) => {
+                    return query.queryKey[0] === `config/${type}`;
+                },
                 refetchType: "active",
             });
         } catch (error) {
             console.error(error);
             alert("Erro ao adicionar cor.");
         }
+    };
+
+    const createEmptyComponent = (type: string) => {
+        return (value: string) => (
+            <tr
+                className="hover:bg-gray transition cursor-pointer"
+                onClick={() => {
+                    onClick(value, type);
+                }}
+            >
+                <td className="px-4 py-2">Adicionar</td>
+            </tr>
+        );
     };
 
     return (
@@ -65,16 +80,7 @@ export default function Config() {
                         canPaginate={false}
                         canSelect={false}
                         canAddColumn={false}
-                        emptyComponent={(value: string) => (
-                            <tr
-                                className="hover:bg-gray transition cursor-pointer"
-                                onClick={() => {
-                                    onClick(value);
-                                }}
-                            >
-                                <td className="px-4 py-2">Adicionar</td>
-                            </tr>
-                        )}
+                        emptyComponent={createEmptyComponent("color")}
                     />
                     <Table<ProductConfig>
                         headersMap={headersMapSize}
@@ -84,6 +90,7 @@ export default function Config() {
                         canPaginate={false}
                         canAddColumn={false}
                         canSelect={false}
+                        emptyComponent={createEmptyComponent("size")}
                     />
                     <Table<ProductConfig>
                         headersMap={headersMapBrand}
@@ -93,6 +100,7 @@ export default function Config() {
                         canAddColumn={false}
                         canPaginate={false}
                         canSelect={false}
+                        emptyComponent={createEmptyComponent("brand")}
                     />
                     <Table<ProductConfig>
                         headersMap={headersMapType}
@@ -102,6 +110,7 @@ export default function Config() {
                         canPaginate={false}
                         canAddColumn={false}
                         canSelect={false}
+                        emptyComponent={createEmptyComponent("type")}
                     />
                 </div>
             </QueryClientProvider>
