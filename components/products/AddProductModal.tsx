@@ -14,10 +14,10 @@ interface AddProductModalProps {
 
 export interface ProductFormValues {
     price: number;
-    type: string;
-    brand: string;
-    size: string;
-    color: string;
+    typeId: string;
+    brandId: string;
+    sizeId: string;
+    colorId: string;
     providerId: string;
     description: string;
     entryDate?: string;
@@ -92,42 +92,42 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
 
                         <div>
                             <SearchableSelect<ProductFormValues>
-                                id="color"
+                                id="colorId"
                                 label="Cor"
                                 options={colors.map((c) => ({ label: c.value, value: c.id }))}
                                 register={register}
                                 rules={{ required: "Selecione uma cor" }}
-                                errorMessage={errors.color?.message}
+                                errorMessage={errors.colorId?.message}
                             />
                         </div>
                         <div>
                             <SearchableSelect<ProductFormValues>
-                                id="brand"
+                                id="brandId"
                                 label="Marca"
                                 options={brands.map((b) => ({ label: b.value, value: b.id }))}
                                 register={register}
                                 rules={{ required: "Selecione uma marca" }}
-                                errorMessage={errors.brand?.message}
+                                errorMessage={errors.brandId?.message}
                             />
                         </div>
                         <div>
                             <SearchableSelect<ProductFormValues>
-                                id="type"
+                                id="typeId"
                                 label="Tipo"
                                 options={types.map((t) => ({ label: t.value, value: t.id }))}
                                 register={register}
                                 rules={{ required: "Selecione um tipo" }}
-                                errorMessage={errors.type?.message}
+                                errorMessage={errors.typeId?.message}
                             />
                         </div>
                         <div>
                             <SearchableSelect<ProductFormValues>
-                                id="size"
+                                id="sizeId"
                                 label="Tamanho"
                                 options={sizes.map((s) => ({ label: s.value, value: s.id }))}
                                 register={register}
                                 rules={{ required: "Selecione um tamanho" }}
-                                errorMessage={errors.size?.message}
+                                errorMessage={errors.sizeId?.message}
                             />
                         </div>
 

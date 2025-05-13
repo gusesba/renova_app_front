@@ -62,7 +62,14 @@ export default function Produtos() {
             <AddProductModal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
-                onAddProduct={() => {}}
+                onAddProduct={() => {
+                    queryClient.invalidateQueries({
+                        predicate: (query) => {
+                            return query.queryKey[0] === `products/unsold`;
+                        },
+                        refetchType: "active",
+                    });
+                }}
             />
         </Box>
     );

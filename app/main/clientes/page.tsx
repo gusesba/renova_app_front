@@ -42,7 +42,14 @@ export default function Clientes() {
             <AddClientModal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
-                onAddClient={() => {}}
+                onAddClient={() => {
+                    queryClient.invalidateQueries({
+                        predicate: (query) => {
+                            return query.queryKey[0] === `clients`;
+                        },
+                        refetchType: "active",
+                    });
+                }}
             />
         </>
     );
