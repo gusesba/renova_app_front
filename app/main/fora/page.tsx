@@ -50,6 +50,7 @@ export default function Sold() {
                         "description",
                         "entryDate",
                     ]}
+                    ref={null}
                     url="products/sold"
                     headersMap={headersMap}
                 />

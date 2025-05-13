@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -20,6 +20,14 @@ import DraggableHeader from "./DraggableHeader";
 import { fetchData, TableResponse } from "./fetchData";
 import Box from "../UI/Box";
 
+type TableActions = {
+    deleteSelectedItems: () => void;
+};
+
+export type TablesRef = {
+    [key: string]: TableActions;
+};
+
 export default function Table<T>({
     columnKeys,
     url,
@@ -32,6 +40,7 @@ export default function Table<T>({
     expandedComponent,
     expandedTitle = "Detalhes",
     emptyComponent,
+    ref,
 }: {
     columnKeys: string[];
     url: string;
@@ -44,6 +53,7 @@ export default function Table<T>({
     emptyComponent?: (value: string) => React.JSX.Element;
     expandedComponent?: (id: string) => React.JSX.Element;
     expandedTitle?: string;
+    ref: React.Ref<TablesRef>;
 }) {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageSize, setPageSize] = useState(10);
@@ -156,6 +166,34 @@ export default function Table<T>({
         getExpandedRowModel: getExpandedRowModel(),
         getRowCanExpand: () => canExpand,
     });
+
+    useEffect(() => {
+        // @ts-ignore
+        if (ref?.current) {
+            // @ts-ignore
+            ref.current[url] = {
+                deleteSelectedItems: () => {
+                    table.getSelectedRowModel().rows.forEach((row) => {
+                        // @ts-ignore
+                        fetch(`${process.env.NEXT_PUBLIC_API_URL}/${url}/${row.original.id}`, {
+                            method: "DELETE",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            credentials: "include",
+                        });
+                    });
+                },
+            };
+        }
+        return () => {
+            // @ts-ignore
+            if (ref?.current) {
+                // @ts-ignore
+                delete ref.current[url];
+            }
+        };
+    }, [ref, url, table]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {

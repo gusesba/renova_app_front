@@ -1,8 +1,10 @@
 "use client";
-import Table from "@/components/table/Table";
+import Table, { TablesRef } from "@/components/table/Table";
 import Box from "@/components/UI/Box";
+import Button from "@/components/UI/Button";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React from "react";
+import React, { useRef } from "react";
+import { FaTrash } from "react-icons/fa";
 
 type ProductConfig = {
     value: string;
@@ -26,6 +28,15 @@ const headersMapType: Record<string, string> = {
 
 const queryClient = new QueryClient();
 export default function Config() {
+    const tablesRef = useRef<TablesRef>({});
+
+    const handleDeleteAll = () => {
+        // @ts-ignore
+        Object.values(tablesRef.current).forEach((action) => {
+            action.deleteSelectedItems();
+        });
+    };
+
     const onClick = async (value: string, type: string) => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/config/${type}`, {
@@ -69,6 +80,11 @@ export default function Config() {
         <Box>
             <div className="flex justify-between items-center mb-4 ">
                 <h2 className="text-xl font-bold">Configurações</h2>
+                <div className="flex gap-1 mb-2">
+                    <Button variant="error" onClick={handleDeleteAll}>
+                        <FaTrash />
+                    </Button>
+                </div>
             </div>
             <QueryClientProvider client={queryClient}>
                 <div className="grid grid-cols-4">
@@ -78,8 +94,8 @@ export default function Config() {
                         url="config/color"
                         canExpand={false}
                         canPaginate={false}
-                        canSelect={false}
                         canAddColumn={false}
+                        ref={tablesRef}
                         emptyComponent={createEmptyComponent("color")}
                     />
                     <Table<ProductConfig>
@@ -89,7 +105,7 @@ export default function Config() {
                         canExpand={false}
                         canPaginate={false}
                         canAddColumn={false}
-                        canSelect={false}
+                        ref={tablesRef}
                         emptyComponent={createEmptyComponent("size")}
                     />
                     <Table<ProductConfig>
@@ -99,7 +115,7 @@ export default function Config() {
                         canExpand={false}
                         canAddColumn={false}
                         canPaginate={false}
-                        canSelect={false}
+                        ref={tablesRef}
                         emptyComponent={createEmptyComponent("brand")}
                     />
                     <Table<ProductConfig>
@@ -109,7 +125,7 @@ export default function Config() {
                         canExpand={false}
                         canPaginate={false}
                         canAddColumn={false}
-                        canSelect={false}
+                        ref={tablesRef}
                         emptyComponent={createEmptyComponent("type")}
                     />
                 </div>

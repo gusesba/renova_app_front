@@ -31,6 +31,7 @@ export default function Vendas() {
             </div>
             <QueryClientProvider client={queryClient}>
                 <Table
+                    ref={null}
                     columnKeys={["id", "type", "clientName", "totalProducts", "date"]}
                     url="sells"
                     headersMap={headersMapSell}
@@ -48,6 +49,7 @@ export default function Vendas() {
                                 "description",
                                 "entryDate",
                             ]}
+                            ref={null}
                             url={`sells/${id}/products`}
                             headersMap={headersMapProduct}
                             canPaginate={false}
