@@ -6,6 +6,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
         { name: "Estoque", path: "/main/produtos" },
         { name: "Fora de Estoque", path: "/main/fora" },
         { name: "Vendas", path: "/main/vendas" },
+        { name: "Empréstimos", path: "/main/emprestimos" },
         { name: "Doações", path: "/doacoes" },
         { name: "Devoluções", path: "/devolucoes" },
     ];
