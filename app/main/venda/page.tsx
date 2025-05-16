@@ -17,6 +17,7 @@ type Produto = {
     color: string;
     description: string;
     entryDate: string;
+    providerId: string;
 };
 
 type VendaForm = {
@@ -99,6 +100,15 @@ export default function Venda() {
         if (data.length === 0) {
             setError("É necessário adicionar produtos e um cliente");
             return;
+        }
+
+        if (vendaForm.type === "return") {
+            for (const item of data) {
+                if (item.providerId !== vendaForm.clientId) {
+                    setError(`Peça ${item.id} não pertence ao cliente selecionado`);
+                    return;
+                }
+            }
         }
 
         try {
