@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
+import { Toaster } from "@/components/UI/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,7 +22,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className={`${quicksand.variable}`}>
-            <body className={`antialiased`}>{children}</body>
+            <body className={`antialiased`}>
+                {children}
+                <Toaster />
+            </body>
         </html>
     );
 }

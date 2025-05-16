@@ -7,6 +7,7 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-ki
 import React, { useEffect, useState } from "react";
 import { Client } from "../clientes/page";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type Produto = {
     id: string;
@@ -27,7 +28,6 @@ type VendaForm = {
 
 export default function Venda() {
     const [productId, setProductId] = useState("");
-    const [error, setError] = useState("");
     const [desconto, setDesconto] = useState(0);
     const [clients, setClients] = useState<Client[]>([]);
 
@@ -84,28 +84,27 @@ export default function Venda() {
             const alreadyExists = data.some((item) => item.id === produto.id);
             if (alreadyExists) {
                 console.log("Produto já adicionado", produto.id);
-                setError("Produto já adicionado");
+                toast.warning("Produto já adicionado");
                 return;
             }
 
             setData((prev) => [...prev, produto]);
             setProductId("");
-            setError("");
         } catch (err: any) {
-            setError(err.message || "Erro ao buscar produto");
+            toast.error(err.message || "Erro ao buscar produto");
         }
     };
 
     const finalizarVenda: SubmitHandler<VendaForm> = async (vendaForm) => {
         if (data.length === 0) {
-            setError("É necessário adicionar produtos e um cliente");
+            toast.warning("Adicione pelo menos um produto");
             return;
         }
 
         if (vendaForm.type === "return") {
             for (const item of data) {
                 if (item.providerId !== vendaForm.clientId) {
-                    setError(`Peça ${item.id} não pertence ao cliente selecionado`);
+                    toast.error(`Peça ${item.id} não pertence ao cliente selecionado`);
                     return;
                 }
             }
@@ -127,12 +126,11 @@ export default function Venda() {
 
             if (!res.ok) throw new Error("Erro ao finalizar venda");
 
-            alert("Venda finalizada com sucesso!");
+            toast.success("Venda finalizada com sucesso!");
             setData([]);
             setDesconto(0);
-            setError("");
         } catch (err: any) {
-            setError(err.message || "Erro ao finalizar venda");
+            toast.error(err.message || "Erro ao finalizar venda");
         }
     };
 
@@ -182,7 +180,6 @@ export default function Venda() {
                     >
                         Adicionar Produto
                     </button>
-                    {error && <span className="text-error text-sm ml-2">{error}</span>}
                     <SearchableSelect<VendaForm>
                         id="type"
                         options={[
@@ -193,7 +190,7 @@ export default function Venda() {
                         defaultValue="sell"
                         register={register}
                         rules={{ required: "Selecione um Tipo" }}
-                        errorMessage={errors.clientId?.message}
+                        errorMessage={errors.type?.message}
                     />
                     <SearchableSelect<VendaForm>
                         id="clientId"
