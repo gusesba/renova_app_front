@@ -1,9 +1,12 @@
 "use client";
 import DraggableHeader from "@/components/table/DraggableHeader";
 import Box from "@/components/UI/Box";
+import SearchableSelect from "@/components/UI/SearchableSelect";
 import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Client } from "../clientes/page";
+import { SubmitHandler, useForm } from "react-hook-form";
 
 type Produto = {
     id: string;
@@ -16,11 +19,44 @@ type Produto = {
     entryDate: string;
 };
 
+type VendaForm = {
+    clientId: string;
+    type: "sell" | "donation" | "return";
+};
+
 export default function Venda() {
     const [productId, setProductId] = useState("");
     const [error, setError] = useState("");
     const [desconto, setDesconto] = useState(0);
-    const [clientId, setClientId] = useState("");
+    const [clients, setClients] = useState<Client[]>([]);
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<VendaForm>();
+
+    useEffect(() => {
+        const fetchClients = async () => {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (!response.ok) throw new Error("Erro ao buscar fornecedores.");
+
+                const data = await response.json();
+                setClients(data.items);
+            } catch (error) {
+                console.error("Erro ao carregar fornecedores:", error);
+            }
+        };
+
+        fetchClients();
+    }, []);
 
     const fetchProduto = async () => {
         if (!productId.trim()) return;
@@ -59,8 +95,8 @@ export default function Venda() {
         }
     };
 
-    const finalizarVenda = async () => {
-        if (!clientId.trim() || data.length === 0) {
+    const finalizarVenda: SubmitHandler<VendaForm> = async (vendaForm) => {
+        if (data.length === 0) {
             setError("É necessário adicionar produtos e um cliente");
             return;
         }
@@ -73,9 +109,9 @@ export default function Venda() {
                 },
                 credentials: "include",
                 body: JSON.stringify({
-                    clientId,
+                    clientId: vendaForm.clientId,
+                    type: vendaForm.type,
                     productIds: data.map((item) => item.id),
-                    type: "sell",
                 }),
             });
 
@@ -83,7 +119,6 @@ export default function Venda() {
 
             alert("Venda finalizada com sucesso!");
             setData([]);
-            setClientId("");
             setDesconto(0);
             setError("");
         } catch (err: any) {
@@ -138,15 +173,27 @@ export default function Venda() {
                         Adicionar Produto
                     </button>
                     {error && <span className="text-error text-sm ml-2">{error}</span>}
-                    <input
-                        type="text"
-                        placeholder="ID do cliente"
-                        value={clientId}
-                        onChange={(e) => setClientId(e.target.value)}
-                        className="border border-gray-300 px-2 py-1 rounded w-48"
+                    <SearchableSelect<VendaForm>
+                        id="type"
+                        options={[
+                            { label: "Venda", value: "sell" },
+                            { label: "Doação", value: "donation" },
+                            { label: "Devolução", value: "return" },
+                        ]}
+                        defaultValue="sell"
+                        register={register}
+                        rules={{ required: "Selecione um Tipo" }}
+                        errorMessage={errors.clientId?.message}
+                    />
+                    <SearchableSelect<VendaForm>
+                        id="clientId"
+                        options={clients.map((c) => ({ label: c.name, value: c.id }))}
+                        register={register}
+                        rules={{ required: "Selecione um cliente" }}
+                        errorMessage={errors.clientId?.message}
                     />
                     <button
-                        onClick={finalizarVenda}
+                        onClick={handleSubmit(finalizarVenda)}
                         className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 transition"
                     >
                         Finalizar Venda

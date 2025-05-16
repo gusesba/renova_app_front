@@ -9,11 +9,12 @@ interface Option {
 
 interface SearchableSelectProps<T extends Record<string, any>> {
     id: Path<T>;
-    label: string;
+    label?: string;
     options: Option[];
     register: UseFormRegister<T>;
     rules?: RegisterOptions<T>;
     errorMessage?: string;
+    defaultValue?: string;
 }
 
 export default function SearchableSelect<T extends Record<string, any>>({
@@ -23,10 +24,12 @@ export default function SearchableSelect<T extends Record<string, any>>({
     register,
     rules,
     errorMessage,
+    defaultValue,
 }: SearchableSelectProps<T>) {
+    const defaultOption = options.find((opt) => opt.value === defaultValue) || null;
     const [isOpen, setIsOpen] = useState(false);
-    const [search, setSearch] = useState("");
-    const [selected, setSelected] = useState<Option | null>(null);
+    const [search, setSearch] = useState(defaultOption?.label || "");
+    const [selected, setSelected] = useState<Option | null>(defaultOption);
     const [filtered, setFiltered] = useState<Option[]>(options);
 
     const ref = useRef<HTMLDivElement>(null);
@@ -62,9 +65,11 @@ export default function SearchableSelect<T extends Record<string, any>>({
 
     return (
         <div className="flex flex-col gap-1 w-full" ref={ref}>
-            <label htmlFor={id} className="font-medium text-sm text-gray-700">
-                {label}
-            </label>
+            {label && (
+                <label htmlFor={id} className="font-medium text-sm text-gray-700">
+                    {label}
+                </label>
+            )}
 
             <div className="relative w-full">
                 <input
