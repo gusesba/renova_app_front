@@ -4,7 +4,7 @@ import { RegisterOptions, UseFormRegister, Path } from "react-hook-form";
 
 interface Option {
     label: string;
-    value: string;
+    value: any;
 }
 
 interface SearchableSelectProps<T extends Record<string, any>> {

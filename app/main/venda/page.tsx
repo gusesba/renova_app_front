@@ -6,8 +6,9 @@ import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from 
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import React, { useEffect, useState } from "react";
 import { Client } from "../clientes/page";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { set, SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { SelectClientModal } from "@/components/venda/SelectClientModal";
 
 type Produto = {
     id: string;
@@ -29,35 +30,9 @@ type VendaForm = {
 export default function Venda() {
     const [productId, setProductId] = useState("");
     const [desconto, setDesconto] = useState(0);
-    const [clients, setClients] = useState<Client[]>([]);
-
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<VendaForm>();
-
-    useEffect(() => {
-        const fetchClients = async () => {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (!response.ok) throw new Error("Erro ao buscar fornecedores.");
-
-                const data = await response.json();
-                setClients(data.items);
-            } catch (error) {
-                console.error("Erro ao carregar fornecedores:", error);
-            }
-        };
-
-        fetchClients();
-    }, []);
+    const [modalOpen, setModalOpen] = useState(true);
+    const [client, setClient] = useState<{ name: string; id: string }>();
+    const [type, setType] = useState("");
 
     const fetchProduto = async () => {
         if (!productId.trim()) return;
@@ -95,15 +70,24 @@ export default function Venda() {
         }
     };
 
-    const finalizarVenda: SubmitHandler<VendaForm> = async (vendaForm) => {
+    const finalizarVenda = async () => {
         if (data.length === 0) {
             toast.warning("Adicione pelo menos um produto");
             return;
         }
 
-        if (vendaForm.type === "return") {
+        if (!client) {
+            toast.warning("Selecione um cliente");
+            return;
+        }
+        if (!type) {
+            toast.warning("Selecione o tipo de movimentação");
+            return;
+        }
+
+        if (type === "return") {
             for (const item of data) {
-                if (item.providerId !== vendaForm.clientId) {
+                if (item.providerId !== client.id) {
                     toast.error(`Peça ${item.id} não pertence ao cliente selecionado`);
                     return;
                 }
@@ -118,8 +102,8 @@ export default function Venda() {
                 },
                 credentials: "include",
                 body: JSON.stringify({
-                    clientId: vendaForm.clientId,
-                    type: vendaForm.type,
+                    clientId: client.id,
+                    type: type,
                     productIds: data.map((item) => item.id),
                 }),
             });
@@ -163,133 +147,129 @@ export default function Venda() {
     );
 
     return (
-        <Box>
-            <div className="flex justify-between items-center mb-4 ">
-                <h2 className="text-xl font-bold">Nova Venda</h2>
-                <div className="flex gap-2 items-center mb-4">
-                    <input
-                        type="text"
-                        placeholder="ID do produto"
-                        value={productId}
-                        onChange={(e) => setProductId(e.target.value)}
-                        className="border border-gray-300 px-2 py-1 rounded w-48"
-                    />
-                    <button
-                        onClick={fetchProduto}
-                        className="bg-primary text-white px-4 py-1 rounded hover:bg-secondary transition"
-                    >
-                        Adicionar Produto
-                    </button>
-                    <SearchableSelect<VendaForm>
-                        id="type"
-                        options={[
-                            { label: "Venda", value: "sell" },
-                            { label: "Doação", value: "donation" },
-                            { label: "Devolução", value: "return" },
-                        ]}
-                        defaultValue="sell"
-                        register={register}
-                        rules={{ required: "Selecione um Tipo" }}
-                        errorMessage={errors.type?.message}
-                    />
-                    <SearchableSelect<VendaForm>
-                        id="clientId"
-                        options={clients.map((c) => ({ label: c.name, value: c.id }))}
-                        register={register}
-                        rules={{ required: "Selecione um cliente" }}
-                        errorMessage={errors.clientId?.message}
-                    />
-                    <button
-                        onClick={handleSubmit(finalizarVenda)}
-                        className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 transition"
-                    >
-                        Finalizar Venda
-                    </button>
+        <>
+            <Box>
+                <div className="flex justify-between items-center mb-4 ">
+                    <h2 className="text-xl font-bold">Nova Venda</h2>
+                    <div className="flex gap-2 items-center mb-4">
+                        <span>Cliente:</span>
+                        <span>{client?.name}</span>
+                        <span>Tipo:</span>
+                        <span>{type}</span>
+                        <button onClick={() => setModalOpen(true)}>Open</button>
+                        <input
+                            type="text"
+                            placeholder="ID do produto"
+                            value={productId}
+                            onChange={(e) => setProductId(e.target.value)}
+                            className="border border-gray-300 px-2 py-1 rounded w-48"
+                        />
+                        <button
+                            onClick={fetchProduto}
+                            className="bg-primary text-white px-4 py-1 rounded hover:bg-secondary transition"
+                        >
+                            Adicionar Produto
+                        </button>
+                        <button
+                            onClick={finalizarVenda}
+                            className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 transition"
+                        >
+                            Finalizar Venda
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={(event) => {
-                    const { active, over } = event;
-                    if (active.id !== over?.id) {
-                        setColumnKeys((prev) => {
-                            const oldIndex = prev.indexOf(active.id as string);
-                            const newIndex = prev.indexOf(over?.id as string);
-                            return arrayMove(prev, oldIndex, newIndex);
-                        });
-                    }
-                }}
-            >
-                <SortableContext items={columnKeys} strategy={verticalListSortingStrategy}>
-                    <table className="min-w-full text-sm text-left border-collapse table-fixed">
-                        <thead>
-                            <tr>
-                                {columnKeys.map((key, idx) => (
-                                    <DraggableHeader
-                                        allColumns={columns}
-                                        columnOrder={columnKeys}
-                                        key={key}
-                                        headersMap={headersMap}
-                                        setColumnOrder={setColumnKeys}
-                                        header={key}
-                                        isFirst={idx === 0}
-                                    >
-                                        <div className="flex items-center gap-1">
-                                            {headersMap[key]}
-                                        </div>
-                                    </DraggableHeader>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((item) => (
-                                <tr key={item.id} className="hover:bg-gray transition">
-                                    {columnKeys.map((key) => (
-                                        <td key={`${key}_${item.id}`} className="px-4 py-2">
-                                            {item[key as keyof Produto]}
-                                        </td>
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event) => {
+                        const { active, over } = event;
+                        if (active.id !== over?.id) {
+                            setColumnKeys((prev) => {
+                                const oldIndex = prev.indexOf(active.id as string);
+                                const newIndex = prev.indexOf(over?.id as string);
+                                return arrayMove(prev, oldIndex, newIndex);
+                            });
+                        }
+                    }}
+                >
+                    <SortableContext items={columnKeys} strategy={verticalListSortingStrategy}>
+                        <table className="min-w-full text-sm text-left border-collapse table-fixed">
+                            <thead>
+                                <tr>
+                                    {columnKeys.map((key, idx) => (
+                                        <DraggableHeader
+                                            allColumns={columns}
+                                            columnOrder={columnKeys}
+                                            key={key}
+                                            headersMap={headersMap}
+                                            setColumnOrder={setColumnKeys}
+                                            header={key}
+                                            isFirst={idx === 0}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                {headersMap[key]}
+                                            </div>
+                                        </DraggableHeader>
                                     ))}
                                 </tr>
-                            ))}
-                        </tbody>
-                        <tfoot className="border-t-gray-300 border-t">
-                            <tr>
-                                <td
-                                    colSpan={Math.ceil(columnKeys.length / 3)}
-                                    className="px-4 py-2 font-semibold text-center"
-                                >
-                                    Total - {`R$${total.toFixed(2)}`}
-                                </td>
-                                <td
-                                    colSpan={Math.ceil(columnKeys.length / 3)}
-                                    className="px-4 py-2 font-semibold text-center"
-                                >
-                                    <label className="flex items-center justify-center gap-2">
-                                        Desconto -
-                                        <input
-                                            type="number"
-                                            value={desconto}
-                                            onChange={(e) =>
-                                                setDesconto(parseFloat(e.target.value) || 0)
-                                            }
-                                            className="w-24 border border-gray-300 rounded px-1 text-right"
-                                        />
-                                    </label>
-                                </td>
-                                <td
-                                    colSpan={
-                                        columnKeys.length - 2 * Math.ceil(columnKeys.length / 3)
-                                    }
-                                    className="px-4 py-2 font-semibold text-center"
-                                >
-                                    Final - R${final.toFixed(2)}
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </SortableContext>
-            </DndContext>
-        </Box>
+                            </thead>
+                            <tbody>
+                                {data.map((item) => (
+                                    <tr key={item.id} className="hover:bg-gray transition">
+                                        {columnKeys.map((key) => (
+                                            <td key={`${key}_${item.id}`} className="px-4 py-2">
+                                                {item[key as keyof Produto]}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot className="border-t-gray-300 border-t">
+                                <tr>
+                                    <td
+                                        colSpan={Math.ceil(columnKeys.length / 3)}
+                                        className="px-4 py-2 font-semibold text-center"
+                                    >
+                                        Total - {`R$${total.toFixed(2)}`}
+                                    </td>
+                                    <td
+                                        colSpan={Math.ceil(columnKeys.length / 3)}
+                                        className="px-4 py-2 font-semibold text-center"
+                                    >
+                                        <label className="flex items-center justify-center gap-2">
+                                            Desconto -
+                                            <input
+                                                type="number"
+                                                value={desconto}
+                                                onChange={(e) =>
+                                                    setDesconto(parseFloat(e.target.value) || 0)
+                                                }
+                                                className="w-24 border border-gray-300 rounded px-1 text-right"
+                                            />
+                                        </label>
+                                    </td>
+                                    <td
+                                        colSpan={
+                                            columnKeys.length - 2 * Math.ceil(columnKeys.length / 3)
+                                        }
+                                        className="px-4 py-2 font-semibold text-center"
+                                    >
+                                        Final - R${final.toFixed(2)}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </SortableContext>
+                </DndContext>
+            </Box>
+            <SelectClientModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSelectClient={(data) => {
+                    setClient(data.client);
+                    setType(data.type);
+                }}
+            />
+        </>
     );
 }
