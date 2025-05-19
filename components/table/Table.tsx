@@ -30,6 +30,7 @@ export type TablesRef = {
 
 export default function Table<T>({
     columnKeys,
+    formatColumns,
     url,
     headersMap,
     canExpand = false,
@@ -43,6 +44,7 @@ export default function Table<T>({
     ref,
 }: {
     columnKeys: string[];
+    formatColumns?: Record<string, (value: string) => string>;
     url: string;
     headersMap: Record<string, string>;
     canExpand?: boolean;
@@ -113,6 +115,7 @@ export default function Table<T>({
         return columnOrder.map((key) => ({
             accessorKey: key,
             header: headersMap[key],
+            cell: (x) => formatColumns?.[key]?.(x.getValue()) || x.getValue(),
         }));
     }, [columnOrder]);
 

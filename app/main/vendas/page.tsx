@@ -33,6 +33,13 @@ export default function Vendas() {
                 <Table
                     ref={null}
                     columnKeys={["id", "type", "clientName", "totalProducts", "date"]}
+                    formatColumns={{
+                        type: (x) => {
+                            if (x === "sell") return "Venda";
+                            else if (x === "donation") return "Doação";
+                            else return "Devolução";
+                        },
+                    }}
                     url="sells"
                     headersMap={headersMapSell}
                     canExpand={true}
