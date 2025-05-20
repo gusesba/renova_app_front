@@ -22,17 +22,40 @@ type Produto = {
     providerId: string;
 };
 
-type VendaForm = {
-    clientId: string;
-    type: "sell" | "donation" | "return";
-};
-
 export default function Venda() {
     const [productId, setProductId] = useState("");
     const [desconto, setDesconto] = useState(0);
     const [modalOpen, setModalOpen] = useState(true);
     const [client, setClient] = useState<{ name: string; id: string }>();
     const [type, setType] = useState("");
+
+    useEffect(() => {
+        const fetchBorrowedProducts = async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/products/client/${client?.id}/borrowed`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        credentials: "include",
+                    },
+                );
+                if (!res.ok) {
+                    toast.error("Erro ao buscar produtos emprestados");
+                    return;
+                }
+
+                const produtos: Produto[] = await res.json();
+                setData(produtos);
+            } catch (err: any) {
+                toast.error(err.message || "Erro ao buscar produtos");
+            }
+        };
+        if (client) {
+            fetchBorrowedProducts();
+        }
+    }, [client]);
 
     const fetchProduto = async () => {
         if (!productId.trim()) return;
@@ -155,7 +178,15 @@ export default function Venda() {
                         <span>Cliente:</span>
                         <span>{client?.name}</span>
                         <span>Tipo:</span>
-                        <span>{type}</span>
+                        <span>
+                            {type === "sell"
+                                ? "Venda"
+                                : type === "return"
+                                  ? "Devolução"
+                                  : type === "borrow"
+                                    ? "Empréstimo"
+                                    : "Doação"}
+                        </span>
                         <button onClick={() => setModalOpen(true)}>Open</button>
                         <input
                             type="text"

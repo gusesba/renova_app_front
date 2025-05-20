@@ -93,6 +93,7 @@ export function SelectClientModal({ isOpen, onClose, onSelectClient }: AddClient
                                 { label: "Venda", value: "sell" },
                                 { label: "Doação", value: "donation" },
                                 { label: "Devolução", value: "return" },
+                                { label: "Empréstimo", value: "borrow" },
                             ]}
                             defaultValue="sell"
                             register={register}

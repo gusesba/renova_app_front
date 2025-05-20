@@ -37,6 +37,7 @@ export default function Vendas() {
                         type: (x) => {
                             if (x === "sell") return "Venda";
                             else if (x === "donation") return "Doação";
+                            else if (x === "borrow") return "Empréstimo";
                             else return "Devolução";
                         },
                     }}
