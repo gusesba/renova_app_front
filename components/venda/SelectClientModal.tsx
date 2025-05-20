@@ -26,6 +26,7 @@ export function SelectClientModal({ isOpen, onClose, onSelectClient }: AddClient
     } = useForm<IFormValues>();
 
     const [clients, setClients] = useState<Client[]>([]);
+    const [isShaking, setIsShaking] = useState(false);
 
     useEffect(() => {
         const fetchClients = async () => {
@@ -51,6 +52,13 @@ export function SelectClientModal({ isOpen, onClose, onSelectClient }: AddClient
 
     const nodeRef = useRef(null);
 
+    const handleBackgroundClick = () => {
+        if (nodeRef.current) {
+            setIsShaking(true);
+            setTimeout(() => setIsShaking(false), 500); // duração igual ao da animação
+        }
+    };
+
     const onCloseHandler = () => {
         reset();
         onClose();
@@ -65,11 +73,11 @@ export function SelectClientModal({ isOpen, onClose, onSelectClient }: AddClient
         <CSSTransition in={isOpen} timeout={300} classNames="modal" unmountOnExit nodeRef={nodeRef}>
             <div
                 className="fixed inset-0 flex items-center justify-center bg-[#00000080] z-50"
-                onClick={onCloseHandler}
+                onClick={handleBackgroundClick}
                 ref={nodeRef}
             >
                 <div
-                    className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md"
+                    className={`bg-white p-6 rounded-xl shadow-lg w-full max-w-md ${isShaking ? "shake" : ""}`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <h2 className="text-xl font-semibold mb-4">Dados da Venda</h2>

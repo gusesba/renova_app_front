@@ -31,7 +31,15 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
         reset,
     } = useForm<ProductFormValues>();
 
+    const [isShaking, setIsShaking] = useState(false);
     const nodeRef = useRef(null);
+
+    const handleBackgroundClick = () => {
+        if (nodeRef.current) {
+            setIsShaking(true);
+            setTimeout(() => setIsShaking(false), 500); // duração igual ao da animação
+        }
+    };
 
     const onCloseHandler = () => {
         reset();
@@ -71,11 +79,11 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
         <CSSTransition in={isOpen} timeout={300} classNames="modal" unmountOnExit nodeRef={nodeRef}>
             <div
                 className="fixed inset-0 flex items-center justify-center bg-[#00000080] z-50"
-                onClick={onCloseHandler}
+                onClick={handleBackgroundClick}
                 ref={nodeRef}
             >
                 <div
-                    className="bg-white p-6 rounded-xl shadow-lg w-full max-w-xl"
+                    className={`bg-white p-6 rounded-xl shadow-lg w-full max-w-md ${isShaking ? "shake" : ""}`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <h2 className="text-xl font-semibold mb-4">Adicionar Produto</h2>
