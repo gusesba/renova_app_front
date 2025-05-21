@@ -9,6 +9,7 @@ import { FaTrash } from "react-icons/fa";
 
 export interface Product {
     id: string;
+    codeRef: string;
     price: number;
     type: string;
     brand: string;
@@ -21,6 +22,7 @@ export interface Product {
 
 export const headersMapProduct: Record<string, string> = {
     id: "Id",
+    codeRef: "Código",
     price: "Preço",
     type: "Produto",
     brand: "Marca",
@@ -59,6 +61,7 @@ export default function Produtos() {
                 <Table<Product>
                     columnKeys={[
                         "id",
+                        "codeRef",
                         "price",
                         "type",
                         "brand",
