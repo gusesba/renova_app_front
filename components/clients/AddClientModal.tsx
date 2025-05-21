@@ -13,6 +13,8 @@ interface AddClientModalProps {
 interface IFormValues {
     name: string;
     phone: string;
+    codeRef: string;
+    obs: string;
 }
 
 export function AddClientModal({ isOpen, onClose, onAddClient }: AddClientModalProps) {
@@ -92,6 +94,22 @@ export function AddClientModal({ isOpen, onClose, onAddClient }: AddClientModalP
                             register={register}
                             rules={{ required: "Digite o telefone" }}
                             errorMesage={errors.phone?.message}
+                        />
+                        <InputLabel
+                            text="Código de Referência"
+                            id="codeRef"
+                            type="text"
+                            placeholder="Código de Referência"
+                            register={register}
+                            errorMesage={errors.codeRef?.message}
+                        />
+                        <InputLabel
+                            text="Observações"
+                            id="obs"
+                            type="text"
+                            placeholder="Observações"
+                            register={register}
+                            errorMesage={errors.obs?.message}
                         />
                     </div>
 

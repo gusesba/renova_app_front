@@ -9,14 +9,18 @@ import { FaTrash } from "react-icons/fa";
 
 export interface Client {
     id: string;
+    codeRef: string;
     name: string;
     phone: string;
+    obs: string;
 }
 
 const headersMap: Record<string, string> = {
     id: "ID",
+    codeRef: "Código",
     name: "Nome",
     phone: "Telefone",
+    obs: "Observações",
 };
 
 const queryClient = new QueryClient();
@@ -46,7 +50,7 @@ export default function Clientes() {
                 </div>
                 <QueryClientProvider client={queryClient}>
                     <Table<Client>
-                        columnKeys={["id", "name", "phone"]}
+                        columnKeys={["id", "codeRef", "name", "phone", "obs"]}
                         url="clients"
                         headersMap={headersMap}
                         ref={tablesRef}

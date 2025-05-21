@@ -164,7 +164,6 @@ export function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductMod
                             type="date"
                             placeholder="Data de Entrada"
                             register={register}
-                            rules={{}}
                             errorMesage={errors.entryDate?.message}
                         />
                     </div>

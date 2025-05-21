@@ -431,6 +431,9 @@ export default function Table<T>({
                                                     )}
                                                     {row.getVisibleCells().map((cell) => {
                                                         const value = cell.getValue();
+                                                        const isDateColumn = cell.column.id
+                                                            .toLowerCase()
+                                                            .includes("date");
 
                                                         let formattedValue: React.ReactNode;
 
@@ -442,11 +445,7 @@ export default function Table<T>({
                                                             formattedValue = value
                                                                 .substring(0, 8)
                                                                 .toUpperCase();
-                                                        } else if (
-                                                            value instanceof Date ||
-                                                            (typeof value === "string" &&
-                                                                !isNaN(Date.parse(value)))
-                                                        ) {
+                                                        } else if (isDateColumn) {
                                                             const date = new Date(value as string);
                                                             formattedValue =
                                                                 date.toLocaleDateString("pt-BR", {
